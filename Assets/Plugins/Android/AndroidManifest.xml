@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    package="com.spacetrader5000.game"
+    android:versionCode="1"
+    android:versionName="1.0.0"
+    android:installLocation="auto">
+
+    <!-- Minimum API 23 (Android 6.0); target API 34 (Android 14) -->
+    <uses-sdk
+        android:minSdkVersion="23"
+        android:targetSdkVersion="34" />
+
+    <!-- Vibration for haptic feedback in combat -->
+    <uses-permission android:name="android.permission.VIBRATE" />
+
+    <!-- Internet permission – required if cloud saves / leaderboards added later -->
+    <uses-permission android:name="android.permission.INTERNET" />
+
+    <!-- Required for Unity on API 33+ to query installed packages -->
+    <uses-permission android:name="android.permission.QUERY_ALL_PACKAGES"
+        android:minSdkVersion="30" />
+
+    <application
+        android:label="Space Trader 5000"
+        android:icon="@drawable/app_icon"
+        android:isGame="true"
+        android:banner="@drawable/app_banner"
+        android:theme="@android:style/Theme.Black.NoTitleBar.Fullscreen"
+        android:hardwareAccelerated="true"
+        android:resizeableActivity="false">
+
+        <!-- Unity main activity -->
+        <activity
+            android:name="com.unity3d.player.UnityPlayerGameActivity"
+            android:label="Space Trader 5000"
+            android:screenOrientation="fullSensor"
+            android:launchMode="singleTask"
+            android:configChanges="mcc|mnc|locale|touchscreen|keyboard|keyboardHidden|navigation|orientation|screenLayout|uiMode|screenSize|smallestScreenSize|fontScale|layoutDirection|density"
+            android:exported="true">
+
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+
+            <!-- Render in full-screen notch/cutout area on Android 9+ -->
+            <meta-data
+                android:name="android.notch_support"
+                android:value="true" />
+        </activity>
+
+        <!-- Unity notification service (optional, remove if not using push notifications) -->
+        <meta-data
+            android:name="unity.notification.channel.default.importance"
+            android:value="2" />
+
+        <!-- Disable crash reporting opt-in prompt -->
+        <meta-data
+            android:name="unity.disable-new-event-system-for-input"
+            android:value="false" />
+
+    </application>
+
+</manifest>

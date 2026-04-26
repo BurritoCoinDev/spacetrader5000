@@ -1,0 +1,233 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!129 &1
+PlayerSettings:
+  m_ObjectHideFlags: 0
+  serializedVersion: 24
+  productGUID: 4a3d7e8f2c1b5a6d9e0f3c2b1a4d7e8f
+  AndroidProfiler: 0
+  AndroidFilterTouchesWhenObscured: 0
+  AndroidEnableSustainedPerformanceMode: 0
+  defaultScreenWidthSize: 1080
+  defaultScreenHeightSize: 1920
+  m_SplashScreenBackgroundColor: {r: 0, g: 0, b: 0, a: 1}
+  m_ShowUnitySplashScreen: 0
+  m_ShowUnitySplashLogo: 0
+  m_SplashScreenOverlayOpacity: 1
+  m_SplashScreenAnimation: 1
+  m_SplashScreenLogoStyle: 1
+  m_SplashScreenDrawMode: 0
+  m_SplashScreenBackgroundAnimationZoom: 1
+  m_SplashScreenLogoAnimationZoom: 1
+  m_SplashScreenBackgroundLandscapeAspect: 1
+  m_SplashScreenBackgroundPortraitAspect: 1
+  m_SplashScreenBackgroundLandscapeUvs:
+    serializedVersion: 2
+    x: 0
+    y: 0
+    width: 1
+    height: 1
+  m_SplashScreenBackgroundPortraitUvs:
+    serializedVersion: 2
+    x: 0
+    y: 0
+    width: 1
+    height: 1
+  m_SplashScreenLogos: []
+  m_VirtualRealitySplashScreen: {fileID: 0}
+  m_HolographicTrackingLossScreen: {fileID: 0}
+  defaultCursor: {fileID: 0}
+  cursorHotspot: {x: 0, y: 0}
+  m_DefaultScreenOrientation: 3
+  m_AllowedAutorotateToPortrait: 1
+  m_AllowedAutorotateToPortraitUpsideDown: 0
+  m_AllowedAutorotateToLandscapeRight: 1
+  m_AllowedAutorotateToLandscapeLeft: 1
+  m_UseOSAutorotation: 1
+  m_Use32BitDisplayBuffer: 1
+  m_PreserveFramebufferAlpha: 0
+  m_DisableDepthAndStencilBuffers: 0
+  m_androidStartInFullscreen: 1
+  m_androidRenderOutsideSafeArea: 1
+  m_androidUseSwappy: 1
+  m_androidBlitType: 0
+  m_androidResizableWindow: 0
+  m_androidDefaultWindowWidth: 1920
+  m_androidDefaultWindowHeight: 1080
+  m_androidMinimumWindowWidth: 400
+  m_androidMinimumWindowHeight: 300
+  m_androidFullscreenMode: 1
+  m_defaultIsNativeResolution: 1
+  m_macRetinaSupport: 1
+  m_runInBackground: 0
+  m_captureSingleScreen: 0
+  m_muteOtherAudioSources: 0
+  m_Prepare IOS For Recording: 0
+  m_Force IOS Speakers When Recording: 0
+  m_deferSystemGesturesMode: 0
+  m_hideHomeButton: 0
+  m_submitAnalytics: 0
+  m_useAnimatedAutorotation: 1
+  m_forceSingleInstance: 0
+  m_useFlipModelSwapchain: 1
+  m_autoRotationBehavior: 0
+  m_allowHDRDisplaySupport: 0
+  m_uiUseControllerInputForAllPlatforms: 0
+  m_stripUnusedMeshComponents: 1
+  m_strictShaderVariantMatching: 0
+  m_VertexChannelCompressionMask: 4054
+  m_iPhoneApplicationDisplayName: Space Trader 5000
+  m_BuildTargetBundleVersion:
+    Android: 1.0.0
+    Standalone: 1.0.0
+  m_BuildTargetBundleVersionCode:
+    Android: 1
+  productName: Space Trader 5000
+  companyName: Spacetrader5000
+  m_CursorLock: 0
+  m_InvertCursorLock: 0
+  m_SupportedAspectRatios:
+    4:3: 1
+    5:4: 1
+    16:10: 1
+    16:9: 1
+    Others: 1
+  m_LegacyClampBlendShapeWeights: 0
+  platformArchitecture:
+    Android: 1
+  scriptingDefineSymbols:
+    Android: UNITY_ANDROID
+    Standalone:
+  additionalCompilerArguments:
+    Android: []
+  platformDisabledModules: []
+  scriptingBackend:
+    Android: 1
+  il2cppCompilerConfiguration:
+    Android: 0
+  managedStrippingLevel:
+    Android: 1
+    Standalone: 1
+  targetArchitectures:
+    Android: 1
+  applicationIdentifier:
+    Android: com.spacetrader5000.game
+    Standalone: com.spacetrader5000.game
+  buildTargetSupportedAspectRatios:
+    Android:
+      4:3: 1
+      5:4: 1
+      16:10: 1
+      16:9: 1
+      Others: 1
+  AndroidBundleVersionCode: 1
+  AndroidMinSdkVersion: 23
+  AndroidTargetSdkVersion: 34
+  AndroidPreferredInstallLocation: 0
+  aotOptions:
+  androidSplashScreenScale: 0
+  m_AndroidKeystoreName:
+  m_AndroidKeyaliasName:
+  m_AndroidBuildApkPerCpuArchitecture: 0
+  m_AndroidTVCompatibility: 0
+  m_AndroidIsGame: 1
+  m_AndroidEnableChromeCast: 0
+  androidEnableBanner: 0
+  m_AndroidUseLowLatencyAudioIfPossible: 0
+  m_AndroidValidateAppBundleSize: 1
+  m_AndroidAppBundleSizeToValidate: 150
+  m_obfuscateSymbols: 0
+  releaseAndroidBuild: 0
+  logObjCUncaughtExceptions: 1
+  enableInternalProfiler: 0
+  actionOnDotNetUnhandledException: 1
+  enableCrashReportAPI: 0
+  cameraUsageDescription:
+  locationUsageDescription:
+  microphoneUsageDescription:
+  bluetoothUsageDescription:
+  disableDepthAndStencilBuffers: 0
+  androidApplicationEntry: 0
+  androidGLESVersion: 2
+  openGLRequireES31: 0
+  openGLRequireES31AEP: 0
+  openGLRequireES32: 0
+  m_TemplateCustomTags: {}
+  mobileMTRendering:
+    Android: 1
+  m_BuildTargetGroupTarget:
+    Android: 13
+  wiiUDrcBufferDisabled: 0
+  wiiUProfilerLibPath:
+  playModeTestRunnerEnabled: 0
+  actionOnDotNetUnhandledExceptionEditor: 1
+  enableCrashReportAPIEditor: 0
+  additionalIl2CppArgs:
+  scriptingRuntimeVersion: 1
+  gcIncremental: 1
+  assemblyVersionValidation: 1
+  m_UseDeterministicCompilation: 1
+  m_AllowUnsafeCode: 0
+  m_GarbageCollectionHeapGrowthStrategy: 0
+  m_GcHeapGrowthAmount: 0
+  m_GcHeapGrowthAmountMode: 0
+  m_GcHeapMaxReserved: 0
+  m_GcHeapMaxReservedMode: 0
+  m_UseLegacyProbeSampleCount: 0
+  m_SpriteMeshType: 1
+  m_EnableFrameTimingStats: 0
+  m_EnableOpenGLProfilerGPURecorders: 1
+  m_UseHDRDisplay: 0
+  m_HDRBitDepth: 0
+  m_ColorGamut:
+  - 0
+  m_ColorGamutAndroid:
+  - 0
+  m_targetPixelDensity: 0
+  m_resolutionScalingMode: 0
+  m_androidSupportedAspectRatio: 2.1
+  m_resetResolutionOnWindowResize: 0
+  m_blendShapeNormalImportMode: 0
+  VR settings:
+    cardboard:
+      depthFormat: 0
+      enableTransitionView: 0
+    daydream:
+      depthFormat: 0
+      useSustainedPerformanceMode: 0
+      enableVideoLayer: 0
+      useProtectedVideoMemory: 0
+      minimumSupportedHeadTracking: 0
+      maximumSupportedHeadTracking: 1
+    hololens:
+      depthFormat: 1
+      depthBufferSharingEnabled: 1
+    lumin:
+      depthFormat: 0
+      frameTimingHint: 2
+      enableGLCache: 0
+      glCacheMaxBlobSize: 524288
+      glCacheMaxFileSize: 4194304
+    oculus:
+      sharedDepthBuffer: 1
+      dashSupport: 1
+      lowOverheadMode: 0
+      optimizeBufferDiscards: 1
+      phaseSync: 0
+      fixedFoveatedRenderingLevel: 0
+      fixedFoveatedRenderingDynamic: 0
+      symmetricProjection: 0
+      v2Signing: 1
+    openxr:
+      m_renderMode: 0
+      m_depthSubmissionMode: 0
+  cloudProjectId:
+  framebufferDepthMemorylessMode: 0
+  qualitySettingsNames: []
+  projectName: SpaceTrader5000
+  organizationId:
+  cloudEnabled: 0
+  legacyClampBlendShapeWeights: 0
+  playerDataPath:
+  forceSRGBBlit: 0
+  virtualTexturingSupportEnabled: 0
