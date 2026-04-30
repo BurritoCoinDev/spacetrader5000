@@ -275,14 +275,18 @@ namespace SpaceTrader
             for (int i = 0; i < MaxCrew; i++)    newShip.Crew[i]    = -1;
             newShip.Crew[0] = 0;
 
-            G.Ship       = newShip;
-            G.EscapePod  = false;
-            G.Insurance  = false;
-            G.NoClaim    = 0;
+            G.Ship      = newShip;
+            G.EscapePod = false;
+            G.NoClaim   = 0;
 
             if (G.Insurance)
             {
-                G.Credits += ShipPriceSystem.CurrentShipPriceWithoutCargo(true);
+                G.Credits   += ShipPriceSystem.CurrentShipPriceWithoutCargo(true);
+                G.Insurance  = false;
+            }
+            else
+            {
+                G.Insurance = false;
             }
 
             G.Commander.CurSystem = G.WarpSystem;
