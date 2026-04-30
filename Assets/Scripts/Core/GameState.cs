@@ -43,7 +43,7 @@ namespace SpaceTrader
 
         public bool  AutoFuel               = false;
         public bool  AutoRepair             = false;
-        public bool  Clicks                 = false;
+        public int   Clicks                 = 0;   // clicks remaining until arrival (0 = arrived)
         public int   EncounterType          = 0;
         public bool  Raided                 = false;
 
@@ -95,6 +95,7 @@ namespace SpaceTrader
         public bool  LitterWarning          = false;
         public bool  SharePreferences       = true;
         public int   WildStatus             = 0;
+        public bool  HullUpgraded           = false;
 
         public int   Shortcut1              = 0;
         public int   Shortcut2              = 1;

@@ -179,7 +179,7 @@ namespace SpaceTrader
             return false;
         }
 
-        static long WormholeTax(int from, int to)
+        public static long WormholeTax(int from, int to)
             => WormholeExists(from, to) ? GameData.Shiptypes[G.Ship.Type].CostOfFuel * 25L : 0L;
 
         // ── Cloaking check ────────────────────────────────────────────────────
@@ -351,7 +351,7 @@ namespace SpaceTrader
                 if (G.Insurance) G.NoClaim++;
             }
 
-            G.Clicks         = false;
+            G.Clicks         = (int)RealDistance(G.SolarSystem[G.Commander.CurSystem], G.SolarSystem[G.WarpSystem]);
             G.Raided         = false;
             G.Inspected      = false;
             G.LitterWarning  = false;
@@ -379,10 +379,7 @@ namespace SpaceTrader
 
         public static bool Travel()
         {
-            G.Clicks = true;
-            // Encounters and arrival are resolved by the encounter system.
-            // The UI layer will poll EncounterSystem.NextEncounterThisClick()
-            // and then call Arrival() once clicks reach destination.
+            // G.Clicks was already set in DoWarp(); TravelUI drives the loop.
             return true;
         }
 
