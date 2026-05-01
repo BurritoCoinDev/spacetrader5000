@@ -72,11 +72,11 @@ namespace SpaceTrader.UI
             var go  = new GameObject(name);
             go.transform.SetParent(parent, false);
             var tmp = go.AddComponent<TextMeshProUGUI>();
-            tmp.text           = text;
-            tmp.fontSize       = size;
-            tmp.color          = color == default ? ColorTheme.TextPrimary : color;
-            tmp.alignment      = align;
-            tmp.overflowMode   = TextOverflowModes.Ellipsis;
+            tmp.text             = text;
+            tmp.fontSize         = size;
+            tmp.color            = color == default ? ColorTheme.TextPrimary : color;
+            tmp.alignment        = align;
+            tmp.overflowMode     = TextOverflowModes.Ellipsis;
             tmp.textWrappingMode = TextWrappingModes.NoWrap;
             return tmp;
         }
@@ -127,9 +127,9 @@ namespace SpaceTrader.UI
 
             var phGo  = new GameObject("Placeholder"); phGo.transform.SetParent(go.transform, false);
             var phTmp = phGo.AddComponent<TextMeshProUGUI>();
-            phTmp.text     = placeholder;
-            phTmp.fontSize = ColorTheme.FontBody;
-            phTmp.color    = ColorTheme.TextDisabled;
+            phTmp.text      = placeholder;
+            phTmp.fontSize  = ColorTheme.FontBody;
+            phTmp.color     = ColorTheme.TextDisabled;
             phTmp.fontStyle = FontStyles.Italic;
             Stretch(phTmp.rectTransform, 8, 8, 4, 4);
 
@@ -139,9 +139,9 @@ namespace SpaceTrader.UI
             txtTmp.color    = ColorTheme.TextPrimary;
             Stretch(txtTmp.rectTransform, 8, 8, 4, 4);
 
-            inp.textComponent   = txtTmp;
-            inp.placeholder     = phTmp;
-            inp.characterLimit  = GameConstants.NameLen;
+            inp.textComponent  = txtTmp;
+            inp.placeholder    = phTmp;
+            inp.characterLimit = GameConstants.NameLen;
             return inp;
         }
 
@@ -149,8 +149,8 @@ namespace SpaceTrader.UI
 
         public static (ScrollRect scroll, Transform content) ScrollView(Transform parent, string name)
         {
-            var go  = Panel(parent, name, Color.clear);
-            var sr  = go.AddComponent<ScrollRect>();
+            var go = Panel(parent, name, Color.clear);
+            var sr = go.AddComponent<ScrollRect>();
             sr.horizontal = false;
 
             var viewport = new GameObject("Viewport"); viewport.transform.SetParent(go.transform, false);
@@ -162,8 +162,8 @@ namespace SpaceTrader.UI
 
             var content = new GameObject("Content"); content.transform.SetParent(viewport.transform, false);
             var vlg = content.AddComponent<VerticalLayoutGroup>();
-            vlg.childControlWidth  = true; vlg.childControlHeight = false;
-            vlg.childForceExpandWidth = true; vlg.childForceExpandHeight = false;
+            vlg.childControlWidth     = true;  vlg.childControlHeight     = false;
+            vlg.childForceExpandWidth = true;  vlg.childForceExpandHeight = false;
             vlg.spacing = 2;
             var csf = content.AddComponent<ContentSizeFitter>();
             csf.verticalFit = ContentSizeFitter.FitMode.PreferredSize;
@@ -172,8 +172,8 @@ namespace SpaceTrader.UI
             crt.pivot     = new Vector2(0.5f, 1);
             crt.offsetMin = Vector2.zero; crt.offsetMax = Vector2.zero;
 
-            sr.viewport = vrt;
-            sr.content  = crt;
+            sr.viewport          = vrt;
+            sr.content           = crt;
             sr.scrollSensitivity = 40;
 
             return (sr, content.transform);
@@ -183,9 +183,9 @@ namespace SpaceTrader.UI
 
         public static Image Divider(Transform parent, string name = "Divider")
         {
-            var go = new GameObject(name); go.transform.SetParent(parent, false);
+            var go  = new GameObject(name); go.transform.SetParent(parent, false);
             var img = go.AddComponent<Image>(); img.color = ColorTheme.Divider;
-            var rt = go.GetComponent<RectTransform>();
+            var rt  = go.GetComponent<RectTransform>();
             rt.sizeDelta = new Vector2(0, 2);
             rt.anchorMin = new Vector2(0, 0.5f); rt.anchorMax = new Vector2(1, 0.5f);
             return img;
@@ -197,15 +197,17 @@ namespace SpaceTrader.UI
         {
             var go  = Panel(parent, name, ColorTheme.BarBackground);
             var sld = go.AddComponent<Slider>();
-            sld.minValue = 0; sld.maxValue = 1; sld.value = 1;
-            sld.direction = Slider.Direction.LeftToRight;
+            sld.minValue     = 0; sld.maxValue = 1; sld.value = 1;
+            sld.direction    = Slider.Direction.LeftToRight;
             sld.interactable = false;
 
             var fill = Panel(go.transform, "Fill", fillColor);
             var frt  = fill.GetComponent<RectTransform>();
             frt.anchorMin = Vector2.zero; frt.anchorMax = new Vector2(1, 1);
 
-            var fillArea = new GameObject("Fill Area"); fillArea.transform.SetParent(go.transform, false);
+            var fillArea = new GameObject("Fill Area");
+            fillArea.transform.SetParent(go.transform, false);
+            fillArea.AddComponent<RectTransform>();
             Stretch(fillArea.GetComponent<RectTransform>());
             fill.transform.SetParent(fillArea.transform, false);
             Stretch(frt);
