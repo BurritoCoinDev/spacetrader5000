@@ -54,15 +54,17 @@ namespace SpaceTrader
                                     G.Ship.Cargo[index];
         }
 
+        // The SellCargo method shadows the GameConstants.SellCargo constant in
+        // this scope, so the operation constants must be fully qualified.
         public static void SellCargo(int index, int amount, int operation)
         {
             if (amount <= 0 || amount > G.Ship.Cargo[index]) return;
 
-            if (operation == SellCargo || operation == DumpCargo)
+            if (operation == GameConstants.SellCargo || operation == GameConstants.DumpCargo)
             {
-                long revenue = operation == SellCargo ? G.SellPrice[index] * amount : 0;
+                long revenue = operation == GameConstants.SellCargo ? G.SellPrice[index] * amount : 0;
                 G.Credits += revenue;
-                if (operation == SellCargo)
+                if (operation == GameConstants.SellCargo)
                     G.SolarSystem[G.Commander.CurSystem].Qty[index] += amount;
             }
             G.Ship.Cargo[index] -= amount;
@@ -85,9 +87,9 @@ namespace SpaceTrader
             var sys = G.SolarSystem[systemIdx];
             for (int i = 0; i < MaxTradeItem; i++)
             {
-                if (operation == SellCargo && sh.Cargo[i] > 0 && G.SellPrice[i] > 0) return true;
-                if (operation == DumpCargo && sh.Cargo[i] > 0) return true;
-                if (operation == JettisonCargo && sh.Cargo[i] > 0) return true;
+                if (operation == GameConstants.SellCargo     && sh.Cargo[i] > 0 && G.SellPrice[i] > 0) return true;
+                if (operation == GameConstants.DumpCargo     && sh.Cargo[i] > 0) return true;
+                if (operation == GameConstants.JettisonCargo && sh.Cargo[i] > 0) return true;
             }
             return false;
         }
