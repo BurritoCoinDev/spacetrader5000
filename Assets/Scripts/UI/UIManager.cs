@@ -14,7 +14,7 @@ namespace SpaceTrader.UI
         Title, NewCommander, Docked,
         BuyCargo, SellCargo, Shipyard,
         BuyEquipment, SellEquipment, PersonnelRoster, Bank,
-        SystemInfo, CommanderStatus,
+        SystemInfo, CommanderStatus, Options,
         GalacticChart, Warp, Travel,
         Encounter, SpecialEvent, HighScores,
     }
@@ -111,6 +111,7 @@ namespace SpaceTrader.UI
             AddScreen<Screens.BankUI>            (GameScreen.Bank);
             AddScreen<Screens.SystemInfoUI>      (GameScreen.SystemInfo);
             AddScreen<Screens.CommanderStatusUI> (GameScreen.CommanderStatus);
+            AddScreen<Screens.OptionsUI>         (GameScreen.Options);
             AddScreen<Screens.GalacticChartUI>   (GameScreen.GalacticChart);
             AddScreen<Screens.WarpUI>            (GameScreen.Warp);
             AddScreen<Screens.TravelUI>          (GameScreen.Travel);

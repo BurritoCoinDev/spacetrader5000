@@ -110,6 +110,7 @@ namespace SpaceTrader.UI.Screens
                 ("GAL CHART",    GameScreen.GalacticChart),
                 ("WARP",         GameScreen.Warp),
                 ("HIGH SCORES",  GameScreen.HighScores),
+                ("OPTIONS",      GameScreen.Options),
             };
 
             foreach (var (label, screen) in buttons)
