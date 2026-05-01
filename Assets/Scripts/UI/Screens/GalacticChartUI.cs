@@ -43,10 +43,6 @@ namespace SpaceTrader.UI.Screens
                 new Vector2(0, 0.10f), new Vector2(1, 0.84f), Vector2.zero, Vector2.zero);
             _mapRect = mapPanel.GetComponent<RectTransform>();
 
-            // Make the map panel itself hittable for future touch drag support
-            var btn = mapPanel.AddComponent<Button>();
-            btn.onClick.AddListener(OnMapTap);
-
             // Pre-create dots
             _dots = new GameObject[MaxSolarSystem];
             for (int i = 0; i < MaxSolarSystem; i++)
@@ -54,7 +50,7 @@ namespace SpaceTrader.UI.Screens
                 int idx = i;
                 var dot = UIFactory.Panel(mapPanel.transform, $"Dot{i}", ColorTheme.TextSecondary);
                 var rt  = dot.GetComponent<RectTransform>();
-                rt.sizeDelta = new Vector2(12, 12);
+                rt.sizeDelta = new Vector2(14, 14);
                 rt.anchorMin = rt.anchorMax = new Vector2(0.5f, 0.5f);
                 var dotBtn = dot.AddComponent<Button>();
                 dotBtn.onClick.AddListener(() => SelectSystem(idx));
@@ -71,15 +67,20 @@ namespace SpaceTrader.UI.Screens
         public void OnShow()
         {
             var G = GameState.Instance;
-            _fuelText.text = $"Fuel: {G.Ship.Fuel}  Range: {FuelSystem.GetFuelTanks()}";
-            _selectedSystem = G.WarpSystem;
+            int fuel = G.Ship.Fuel;
+            int tanks = FuelSystem.GetFuelTanks();
+            _fuelText.text = $"Fuel: {fuel}  Range: {tanks}";
+            _selectedSystem = G.WarpSystem >= 0 ? G.WarpSystem : G.Commander.CurSystem;
             PlaceDots();
             UpdateSelection();
         }
 
         void PlaceDots()
         {
-            var G = GameState.Instance;
+            var G   = GameState.Instance;
+            int cur = G.Commander.CurSystem;
+            int fuel = G.Ship.Fuel;
+
             for (int i = 0; i < MaxSolarSystem; i++)
             {
                 var sys = G.SolarSystem[i];
@@ -90,12 +91,24 @@ namespace SpaceTrader.UI.Screens
                 rt.anchorMin = new Vector2(nx, ny);
                 rt.anchorMax = new Vector2(nx, ny);
 
-                bool visited = sys.Visited || i == G.Commander.CurSystem;
+                bool isCurrent = i == cur;
+                bool visited   = sys.Visited || isCurrent;
+                long dist      = GameMath.RealDistance(G.SolarSystem[cur], sys);
+                bool inRange   = dist <= fuel && !isCurrent;
+
                 var img = _dots[i].GetComponent<Image>();
-                img.color = i == G.Commander.CurSystem ? ColorTheme.TextAccent
-                          : visited ? ColorTheme.TextSecondary
-                          : ColorTheme.TextDisabled;
-                rt.sizeDelta = i == G.Commander.CurSystem ? new Vector2(16, 16) : new Vector2(10, 10);
+                if (isCurrent)
+                    img.color = ColorTheme.TextAccent;        // gold — current system
+                else if (inRange && visited)
+                    img.color = ColorTheme.TextPositive;      // green — reachable & known
+                else if (inRange)
+                    img.color = new Color(0.20f, 0.60f, 0.30f, 1f); // dim green — reachable, unvisited
+                else if (visited)
+                    img.color = ColorTheme.TextSecondary;     // grey — visited but out of range
+                else
+                    img.color = ColorTheme.TextDisabled;      // dark — unknown & out of range
+
+                rt.sizeDelta = isCurrent ? new Vector2(18, 18) : new Vector2(12, 12);
             }
         }
 
@@ -105,43 +118,40 @@ namespace SpaceTrader.UI.Screens
             UpdateSelection();
         }
 
-        void OnMapTap()
-        {
-            // Handled through dot buttons instead
-        }
-
         void UpdateSelection()
         {
             var G    = GameState.Instance;
             int cur  = G.Commander.CurSystem;
+            int fuel = G.Ship.Fuel;
             var sys  = G.SolarSystem[_selectedSystem];
             bool visited = sys.Visited || _selectedSystem == cur;
 
             string name = GameData.SolarSystemNames[sys.NameIndex];
-            float dist  = (float)GameMath.RealDistance(G.SolarSystem[cur], sys);
-            bool inRange = dist <= FuelSystem.GetFuelTanks();
+            long dist   = GameMath.RealDistance(G.SolarSystem[cur], sys);
+            bool inRange = dist <= fuel;
             bool isHere  = _selectedSystem == cur;
 
             string info = visited
-                ? $"{name}  [{GameData.TechLevelNames[sys.TechLevel]}]  Dist: {dist:F0}"
-                : $"Unknown system  Dist: {dist:F0}";
-            _selectedText.text = isHere ? $"{name} (current)" : info;
-            _selectedText.color = inRange ? ColorTheme.TextPositive : ColorTheme.TextNegative;
+                ? $"{name}  [{GameData.TechLevelNames[sys.TechLevel]}]  Dist: {dist}"
+                : $"Unknown system  Dist: {dist}";
+            _selectedText.text  = isHere ? $"{name} (current)" : info;
+            _selectedText.color = isHere ? ColorTheme.TextAccent
+                                : inRange ? ColorTheme.TextPositive
+                                : ColorTheme.TextNegative;
 
             _warpBtn.interactable = !isHere && inRange;
             if (_warpBtn.interactable)
                 GameState.Instance.WarpSystem = _selectedSystem;
 
-            // Highlight selected dot
-            for (int i = 0; i < MaxSolarSystem; i++)
+            // Refresh dot highlights
+            PlaceDots();
+
+            // Override selected dot colour
+            if (!isHere)
             {
-                var img = _dots[i].GetComponent<Image>();
-                if (i == cur)
-                    img.color = ColorTheme.TextAccent;
-                else if (i == _selectedSystem)
-                    img.color = inRange ? ColorTheme.TextPositive : ColorTheme.TextNegative;
-                else
-                    img.color = G.SolarSystem[i].Visited ? ColorTheme.TextSecondary : ColorTheme.TextDisabled;
+                var img = _dots[_selectedSystem].GetComponent<Image>();
+                img.color = inRange ? Color.white : ColorTheme.TextNegative;
+                _dots[_selectedSystem].GetComponent<RectTransform>().sizeDelta = new Vector2(18, 18);
             }
         }
 
