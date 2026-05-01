@@ -1,5 +1,5 @@
 // Space Trader 5000 – Android/Unity Port
-// Short Range Chart: zoomed star map centered on current system.
+// Short Range Chart: zoomed star map with pinch-to-zoom and pan.
 
 using TMPro;
 using UnityEngine;
@@ -11,22 +11,35 @@ namespace SpaceTrader.UI.Screens
 {
     public class ShortRangeChartUI : MonoBehaviour, IScreenUI
     {
-        const float ViewRadius  = 50f;  // parsecs shown each side
-        const int   CirclePts   = 36;   // dots used to draw fuel-range circle
+        const float DefaultZoom = 50f;   // parsecs from center to edge on reset
+        const float MinZoom     = 8f;
+        const float MaxZoom     = 150f;
+        const int   CirclePts   = 48;    // dots used to draw fuel-range circle
         const float DotSize     = 14f;
         const float CurDotSize  = 18f;
-        const float HitSize     = 60f;  // transparent touch target around each dot
+        const float HitSize     = 60f;   // transparent touch target per system
 
-        RectTransform _mapRect;
+        // ── UI refs ───────────────────────────────────────────────────────────
+        RectTransform   _mapRect;
         TextMeshProUGUI _fuelText;
 
-        // One entry per solar system
-        RectTransform[]     _dotRt;
-        Image[]             _dotImg;
-        TextMeshProUGUI[]   _dotLabel;
+        RectTransform[]   _hitRt;       // outer hit area (positioned by pan/zoom)
+        Image[]           _dotImg;      // inner visual dot
+        TextMeshProUGUI[] _dotLabel;
+        RectTransform[]   _circleRt;
 
-        // Range circle
-        RectTransform[] _circleRt;
+        // ── View state ────────────────────────────────────────────────────────
+        float   _zoom  = DefaultZoom;   // parsecs visible from center to edge
+        Vector2 _pan   = Vector2.zero;  // offset in parsecs from cur system center
+        float   _scale;                 // pixels per parsec (equal in x & y)
+        int     _curSystem;
+        int     _fuel;
+
+        // ── Touch tracking ────────────────────────────────────────────────────
+        float _prevPinchDist;
+        bool  _isPinching;
+
+        // ── Lifecycle ─────────────────────────────────────────────────────────
 
         public void Initialize(GameObject panel)
         {
@@ -42,14 +55,15 @@ namespace SpaceTrader.UI.Screens
                 ColorTheme.FontSmall, ColorTheme.TextSecondary, TextAlignmentOptions.Left);
             UIFactory.Stretch(_fuelText.rectTransform, 12, 12, 4, 4);
 
-            // Map area
+            // Map area — RectMask2D clips dots that pan outside the viewport
             var mapGo = UIFactory.Panel(panel.transform, "Map", new Color(0.04f, 0.04f, 0.10f));
             UIFactory.SetAnchored(mapGo.GetComponent<RectTransform>(),
                 new Vector2(0, 0.02f), new Vector2(1, 0.88f), Vector2.zero, Vector2.zero);
+            mapGo.AddComponent<RectMask2D>();
             _mapRect = mapGo.GetComponent<RectTransform>();
 
-            // Pre-create system dots + labels
-            _dotRt    = new RectTransform[MaxSolarSystem];
+            // Pre-create system entries
+            _hitRt    = new RectTransform[MaxSolarSystem];
             _dotImg   = new Image[MaxSolarSystem];
             _dotLabel = new TextMeshProUGUI[MaxSolarSystem];
 
@@ -57,122 +71,187 @@ namespace SpaceTrader.UI.Screens
             {
                 int idx = i;
 
-                // Transparent hit area — large enough for a finger tap
-                var hit    = UIFactory.Panel(mapGo.transform, $"Hit{i}", Color.clear);
-                var rt     = hit.GetComponent<RectTransform>();
-                rt.sizeDelta  = new Vector2(HitSize, HitSize);
-                rt.anchorMin  = rt.anchorMax = new Vector2(0.5f, 0.5f);
-                _dotRt[i]     = rt;
+                // Transparent hit area carries the Button and acts as the
+                // moveable anchor point; visual dot + label are children so
+                // they translate automatically when the hit area is repositioned.
+                var hit = UIFactory.Panel(mapGo.transform, $"Hit{i}", Color.clear);
+                var hrt = hit.GetComponent<RectTransform>();
+                hrt.sizeDelta        = new Vector2(HitSize, HitSize);
+                hrt.anchorMin        = hrt.anchorMax = new Vector2(0.5f, 0.5f);
+                hrt.anchoredPosition = Vector2.zero;
+                _hitRt[i] = hrt;
 
-                var dotBtn = hit.AddComponent<Button>();
-                dotBtn.onClick.AddListener(() => SelectSystem(idx));
+                var btn = hit.AddComponent<Button>();
+                btn.onClick.AddListener(() => SelectSystem(idx));
 
-                // Visual dot centered inside the hit area
-                var dot    = UIFactory.Panel(hit.transform, $"Dot{i}", Color.grey);
-                var drt    = dot.GetComponent<RectTransform>();
-                drt.sizeDelta    = new Vector2(DotSize, DotSize);
-                drt.anchorMin    = drt.anchorMax = new Vector2(0.5f, 0.5f);
+                // Visual dot — centered inside hit area
+                var dot = UIFactory.Panel(hit.transform, "Dot", Color.grey);
+                var drt = dot.GetComponent<RectTransform>();
+                drt.sizeDelta        = new Vector2(DotSize, DotSize);
+                drt.anchorMin        = drt.anchorMax = new Vector2(0.5f, 0.5f);
                 drt.anchoredPosition = Vector2.zero;
                 _dotImg[i] = dot.GetComponent<Image>();
 
-                // Name label (small, to the right of the dot)
-                var lbl = UIFactory.Label(mapGo.transform, $"Lbl{i}", "",
-                    16, ColorTheme.TextSecondary,
-                    TextAlignmentOptions.Left);
-                var lrt          = lbl.rectTransform;
-                lrt.sizeDelta    = new Vector2(120, 20);
-                lrt.anchorMin    = lrt.anchorMax = new Vector2(0.5f, 0.5f);
-                _dotLabel[i]     = lbl;
+                // Name label — offset right of dot, inside same hit-area transform
+                var lbl = UIFactory.Label(hit.transform, "Lbl", "",
+                    16, ColorTheme.TextSecondary, TextAlignmentOptions.Left);
+                var lrt = lbl.rectTransform;
+                lrt.sizeDelta        = new Vector2(130, 22);
+                lrt.anchorMin        = lrt.anchorMax = new Vector2(0.5f, 0.5f);
+                lrt.anchoredPosition = new Vector2(HitSize * 0.5f + 4, 4);
+                _dotLabel[i] = lbl;
             }
 
-            // Range circle dots (drawn over everything, so add last)
+            // Range circle dots (siblings of hit areas, added last so they render on top)
             _circleRt = new RectTransform[CirclePts];
             for (int k = 0; k < CirclePts; k++)
             {
                 var cd  = UIFactory.Panel(mapGo.transform, $"Circle{k}", ColorTheme.TextAccent);
                 var crt = cd.GetComponent<RectTransform>();
-                crt.sizeDelta  = new Vector2(4, 4);
-                crt.anchorMin  = crt.anchorMax = new Vector2(0.5f, 0.5f);
-                _circleRt[k]   = crt;
+                crt.sizeDelta        = new Vector2(4, 4);
+                crt.anchorMin        = crt.anchorMax = new Vector2(0.5f, 0.5f);
+                crt.anchoredPosition = Vector2.zero;
+                _circleRt[k] = crt;
             }
         }
 
         public void OnShow()
         {
-            var G    = GameState.Instance;
-            int fuel = G.Ship.Fuel;
+            // Reset view to default each time the screen is opened
+            _zoom = DefaultZoom;
+            _pan  = Vector2.zero;
+
+            var G = GameState.Instance;
+            _curSystem = G.Commander.CurSystem;
+            _fuel      = G.Ship.Fuel;
+
             int tanks = FuelSystem.GetFuelTanks();
-            _fuelText.text = $"Fuel: {fuel}  Range: {tanks}";
+            _fuelText.text = $"Fuel: {_fuel}  Range: {tanks}";
 
-            int cur = G.Commander.CurSystem;
-            var curSys = G.SolarSystem[cur];
+            Canvas.ForceUpdateCanvases();
+            RecalcScale();
+            RefreshDots();
+        }
 
-            // Place system dots
+        void Update()
+        {
+            if (!gameObject.activeSelf) return;
+            HandleTouch();
+        }
+
+        // ── Touch input ───────────────────────────────────────────────────────
+
+        void HandleTouch()
+        {
+            int count = Input.touchCount;
+
+            if (count >= 2)
+            {
+                Touch t0 = Input.GetTouch(0);
+                Touch t1 = Input.GetTouch(1);
+                float dist = Vector2.Distance(t0.position, t1.position);
+
+                if (t0.phase == TouchPhase.Began || t1.phase == TouchPhase.Began)
+                {
+                    _prevPinchDist = dist;
+                    _isPinching    = true;
+                }
+                else if (_isPinching && dist > 1f && _prevPinchDist > 1f)
+                {
+                    _zoom = Mathf.Clamp(_zoom * (_prevPinchDist / dist), MinZoom, MaxZoom);
+                    RecalcScale();
+                    RefreshDots();
+                    _prevPinchDist = dist;
+                }
+            }
+            else if (count == 1)
+            {
+                _isPinching = false;
+                Touch t = Input.GetTouch(0);
+                if (t.phase == TouchPhase.Moved)
+                {
+                    // Convert screen-pixel delta → parsec delta (y-axis: screen up = parsec up)
+                    _pan.x -= t.deltaPosition.x / _scale;
+                    _pan.y -= t.deltaPosition.y / _scale;
+                    RefreshDots();
+                }
+            }
+            else
+            {
+                _isPinching = false;
+            }
+        }
+
+        // ── Rendering ─────────────────────────────────────────────────────────
+
+        void RecalcScale()
+        {
+            Rect r = _mapRect.rect;
+            if (r.width <= 0 || r.height <= 0) { _scale = 5f; return; }
+            // Use the shorter side so parsec distance is equal in both axes
+            _scale = Mathf.Min(r.width, r.height) * 0.5f / _zoom;
+        }
+
+        void RefreshDots()
+        {
+            var G      = GameState.Instance;
+            var curSys = G.SolarSystem[_curSystem];
+            Rect r     = _mapRect.rect;
+            float hw   = r.width  * 0.5f + HitSize;
+            float hh   = r.height * 0.5f + HitSize;
+
             for (int i = 0; i < MaxSolarSystem; i++)
             {
                 var sys = G.SolarSystem[i];
-                float dx = sys.X - curSys.X;
-                float dy = sys.Y - curSys.Y;
+                // Pixel offset from map center, accounting for pan
+                float px = (sys.X - curSys.X - _pan.x) * _scale;
+                float py = (sys.Y - curSys.Y - _pan.y) * _scale;
 
-                // Normalized position: 0.5 = center of map
-                float nx = 0.5f + dx / (2f * ViewRadius);
-                float ny = 0.5f + dy / (2f * ViewRadius);
-
-                bool inView = nx >= -0.05f && nx <= 1.05f && ny >= -0.05f && ny <= 1.05f;
-                _dotRt[i].gameObject.SetActive(inView);
-                _dotLabel[i].gameObject.SetActive(inView);
-
+                bool inView = Mathf.Abs(px) <= hw && Mathf.Abs(py) <= hh;
+                _hitRt[i].gameObject.SetActive(inView);
                 if (!inView) continue;
 
-                _dotRt[i].anchorMin = _dotRt[i].anchorMax = new Vector2(nx, ny);
-                _dotRt[i].anchoredPosition = Vector2.zero;
+                _hitRt[i].anchoredPosition = new Vector2(px, py);
 
-                // Label offset slightly right of dot
-                _dotLabel[i].rectTransform.anchorMin =
-                _dotLabel[i].rectTransform.anchorMax = new Vector2(nx, ny);
-                _dotLabel[i].rectTransform.anchoredPosition = new Vector2(10, 4);
-
-                bool isCurrent = i == cur;
+                bool isCurrent = i == _curSystem;
                 bool visited   = sys.Visited || isCurrent;
                 long dist      = GameMath.RealDistance(curSys, sys);
-                bool inRange   = dist <= fuel && !isCurrent;
-                bool wormhole  = !isCurrent && TravelerSystem.WormholeExists(cur, i);
+                bool inRange   = dist <= _fuel && !isCurrent;
+                bool wormhole  = !isCurrent && TravelerSystem.WormholeExists(_curSystem, i);
 
-                // Visual dot size (hit area stays at HitSize)
-                var visRt = _dotRt[i].GetChild(0).GetComponent<RectTransform>();
-                visRt.sizeDelta = isCurrent ? new Vector2(CurDotSize, CurDotSize)
-                                            : new Vector2(DotSize, DotSize);
+                // Visual dot size
+                var drt = _hitRt[i].GetChild(0).GetComponent<RectTransform>();
+                drt.sizeDelta = isCurrent
+                    ? new Vector2(CurDotSize, CurDotSize)
+                    : new Vector2(DotSize,    DotSize);
 
-                if (isCurrent)
-                    _dotImg[i].color = ColorTheme.TextAccent;
-                else if (inRange || wormhole)
-                    _dotImg[i].color = ColorTheme.TextPositive;
-                else if (visited)
-                    _dotImg[i].color = ColorTheme.TextSecondary;
-                else
-                    _dotImg[i].color = ColorTheme.TextDisabled;
+                if (isCurrent)          _dotImg[i].color = ColorTheme.TextAccent;
+                else if (inRange || wormhole) _dotImg[i].color = ColorTheme.TextPositive;
+                else if (visited)       _dotImg[i].color = ColorTheme.TextSecondary;
+                else                    _dotImg[i].color = ColorTheme.TextDisabled;
 
-                string name = GameData.SolarSystemNames[sys.NameIndex];
-                _dotLabel[i].text  = (visited || isCurrent) ? name : "";
-                _dotLabel[i].color = isCurrent ? ColorTheme.TextAccent
+                _dotLabel[i].text  = (visited || isCurrent) ? GameData.SolarSystemNames[sys.NameIndex] : "";
+                _dotLabel[i].color = isCurrent          ? ColorTheme.TextAccent
                                    : inRange || wormhole ? ColorTheme.TextPositive
                                    : ColorTheme.TextSecondary;
             }
 
-            // Draw range circle at fuel parsecs radius
-            PlaceRangeCircle(fuel);
+            PlaceRangeCircle();
         }
 
-        void PlaceRangeCircle(int fuel)
+        void PlaceRangeCircle()
         {
-            float r = (float)fuel / (2f * ViewRadius); // normalised radius
+            float r = _fuel * _scale;  // pixel radius of fuel range
+            // Offset by pan so circle stays centered on current system
+            float panPx = -_pan.x * _scale;
+            float panPy = -_pan.y * _scale;
+
             for (int k = 0; k < CirclePts; k++)
             {
                 float angle = 2f * Mathf.PI * k / CirclePts;
-                float nx = 0.5f + r * Mathf.Cos(angle);
-                float ny = 0.5f + r * Mathf.Sin(angle);
-                _circleRt[k].anchorMin = _circleRt[k].anchorMax = new Vector2(nx, ny);
-                _circleRt[k].anchoredPosition = Vector2.zero;
+                _circleRt[k].anchoredPosition = new Vector2(
+                    panPx + r * Mathf.Cos(angle),
+                    panPy + r * Mathf.Sin(angle));
             }
         }
 
