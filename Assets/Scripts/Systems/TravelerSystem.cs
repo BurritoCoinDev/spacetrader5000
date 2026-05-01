@@ -296,7 +296,7 @@ namespace SpaceTrader
 
             for (int i = 0; i < MaxShield; i++)
             {
-                if (G.Ship.Shield[i] < 0) break;
+                if (G.Ship.Shield[i] < 0) continue;
                 G.Ship.ShieldStrength[i] = GameData.Shieldtypes[G.Ship.Shield[i]].Power;
             }
 

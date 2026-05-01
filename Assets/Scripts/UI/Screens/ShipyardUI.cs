@@ -174,6 +174,7 @@ namespace SpaceTrader.UI.Screens
             if (G.Credits < net) return;
             G.Credits -= net;
             ShipyardSystem.CreateShip(shipIdx);
+            G.HullUpgraded = false;
             Refresh();
         }
     }

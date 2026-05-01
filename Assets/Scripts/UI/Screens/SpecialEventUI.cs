@@ -50,6 +50,9 @@ namespace SpaceTrader.UI.Screens
             var G   = GameState.Instance;
             int evt = G.CurrentSystem.Special;
 
+            // Gate events on quest prerequisites; treat gated events as absent
+            if (!IsEventAvailable(G, evt)) evt = -1;
+
             if (evt < 0)
             {
                 _titleText.text = "No Event";
@@ -62,6 +65,24 @@ namespace SpaceTrader.UI.Screens
             _acceptBtn.gameObject.SetActive(true);
             _declineBtn.GetComponentInChildren<TextMeshProUGUI>().text = "DECLINE";
             PopulateEvent(evt);
+        }
+
+        static bool IsEventAvailable(GameState G, int evt)
+        {
+            switch (evt)
+            {
+                case DragonflyDestroyed:    return G.DragonflyStatus >= 5;
+                case FlyBaratas:            return G.DragonflyStatus == 1;
+                case FlyMelina:             return G.DragonflyStatus == 2;
+                case FlyRegulas:            return G.DragonflyStatus == 3;
+                case MonsterKilled:         return G.MonsterStatus == 2;
+                case ScarabDestroyed:       return G.ScarabStatus == 2;
+                case GetHullUpgraded:       return G.ScarabStatus == 2;
+                case AmbassadorJarek:       return G.JarekStatus == 0;
+                case TransportWild:         return G.WildStatus == 0;
+                case GetReactor:            return G.ReactorStatus == 0;
+                default:                    return true;
+            }
         }
 
         void PopulateEvent(int evt)
@@ -112,9 +133,21 @@ namespace SpaceTrader.UI.Screens
                     _titleText.text = "Unstable Reactor";
                     _descText.text  = "A huge, unstable reactor is available. It will damage your cargo capacity. Accept it?";
                     break;
+                case SpaceMonsterEvent:
+                    _titleText.text = "Space Monster";
+                    _descText.text  = "A gigantic space monster has been terrorizing the Acamar system. Will you hunt it?";
+                    break;
+                case DragonflyEvent:
+                    _titleText.text = "The Dragonfly";
+                    _descText.text  = "A rogue ship called the Dragonfly, armed with a unique lightning shield, has been spotted. Will you hunt it down?";
+                    break;
                 case Scarab:
                     _titleText.text = "The Scarab";
                     _descText.text  = "A specially-hulled ship called the Scarab is causing trouble. Will you deal with it?";
+                    break;
+                case ScarabDestroyed:
+                    _titleText.text = "Scarab Destroyed";
+                    _descText.text  = "You have destroyed the Scarab! An engineer will now upgrade your hull plating.";
                     break;
                 case GetHullUpgraded:
                     _titleText.text = "Hull Upgrade";
@@ -155,6 +188,45 @@ namespace SpaceTrader.UI.Screens
                     }
                     break;
 
+                case SpaceMonsterEvent:
+                    G.MonsterStatus = 1;
+                    break;
+
+                case DragonflyEvent:
+                    G.DragonflyStatus = 1;
+                    break;
+
+                case FlyBaratas:
+                    if (G.DragonflyStatus == 1) G.DragonflyStatus = 2;
+                    break;
+
+                case FlyMelina:
+                    if (G.DragonflyStatus == 2) G.DragonflyStatus = 3;
+                    break;
+
+                case FlyRegulas:
+                    if (G.DragonflyStatus == 3) G.DragonflyStatus = 4;
+                    break;
+
+                case MonsterKilled:
+                    G.Credits += 2000L * (G.Difficulty + 1);
+                    G.PoliceRecordScore += 3;
+                    break;
+
+                case DragonflyDestroyed:
+                    ShipyardSystem.InstallWeapon(MilitaryLaserWeapon);
+                    G.Credits += 1000L * (G.Difficulty + 1);
+                    G.PoliceRecordScore += 1;
+                    break;
+
+                case Scarab:
+                    G.ScarabStatus = 1;
+                    break;
+
+                case ScarabDestroyed:
+                    // Hull upgrade event placed somewhere random by TravelerSystem; nothing more to do here
+                    break;
+
                 case AmbassadorJarek:
                     G.JarekStatus = 1;
                     break;
@@ -177,7 +249,6 @@ namespace SpaceTrader.UI.Screens
                     break;
 
                 case MedicineDelivery:
-                    // Place medicine in cargo
                     int space = CargoSystem.FreeCargoBays();
                     int qty   = GameMath.Min(10, space);
                     G.Ship.Cargo[Medicine] += qty;

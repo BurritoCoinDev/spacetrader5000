@@ -365,7 +365,24 @@ namespace SpaceTrader.UI.Screens
             if (EncounterSystem.IsPirate(enc))   G.PoliceRecordScore += KillPirateScore;
             if (EncounterSystem.IsTrader(enc))   G.PoliceRecordScore += KillTraderScore;
 
-            ShowResult($"You destroyed the {GameData.Shiptypes[G.Opponent.Type].Name}!\nBounty: {UIFactory.Cr(bounty)}",
+            string extraMsg = "";
+            if (EncounterSystem.IsSpaceMonster(enc))
+            {
+                G.MonsterStatus = 2;
+                extraMsg = "\nThe Acamar system is safe!";
+            }
+            else if (EncounterSystem.IsDragonfly(enc))
+            {
+                G.DragonflyStatus = 5;
+                extraMsg = "\nCheck Zalkon for your reward.";
+            }
+            else if (EncounterSystem.IsScarab(enc))
+            {
+                G.ScarabStatus = 2;
+                extraMsg = "\nA hull upgrade awaits you somewhere.";
+            }
+
+            ShowResult($"You destroyed the {GameData.Shiptypes[G.Opponent.Type].Name}!\nBounty: {UIFactory.Cr(bounty)}{extraMsg}",
                 () => ReturnToTravel());
         }
 
