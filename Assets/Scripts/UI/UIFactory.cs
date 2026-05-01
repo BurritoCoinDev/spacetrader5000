@@ -230,7 +230,7 @@ namespace SpaceTrader.UI
 
             if (onBack != null)
             {
-                var back = Btn(bar.transform, "BackBtn", "◀", onBack,
+                var back = Btn(bar.transform, "BackBtn", "<", onBack,
                                ColorTheme.ButtonNormal, ColorTheme.FontBody);
                 Pin(back.GetComponent<RectTransform>(), TextAnchor.MiddleLeft, height, height, 0, 0);
             }
