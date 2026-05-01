@@ -23,12 +23,12 @@ namespace SpaceTrader.UI
     {
         public static UIManager Instance { get; private set; }
 
-        Canvas                           _canvas;
-        readonly Dictionary<GameScreen, GameObject>    _panels  = new();
-        readonly Dictionary<GameScreen, IScreenUI>     _screens = new();
-        readonly Stack<GameScreen>                      _navStack = new();
+        Canvas                                      _canvas;
+        readonly Dictionary<GameScreen, GameObject> _panels   = new();
+        readonly Dictionary<GameScreen, IScreenUI>  _screens  = new();
+        readonly Stack<GameScreen>                  _navStack = new();
 
-        // ── Lifecycle ─────────────────────────────────────────────────────────
+        // ── Lifecycle ──────────────────────────────────────────────
 
         void Awake()
         {
@@ -41,8 +41,7 @@ namespace SpaceTrader.UI
 
         void Start()
         {
-            // Choose initial screen based on save state
-            Navigate(Persistence.SaveSystem.SaveExists() ? GameScreen.Title : GameScreen.Title);
+            Navigate(GameScreen.Title);
         }
 
         void Update()
@@ -50,7 +49,7 @@ namespace SpaceTrader.UI
             if (Keyboard.current != null && Keyboard.current.escapeKey.wasPressedThisFrame) HandleBack();
         }
 
-        // ── Public navigation API ─────────────────────────────────────────────
+        // ── Public navigation API ────────────────────────────────────
 
         public void Navigate(GameScreen screen)
         {
@@ -73,26 +72,25 @@ namespace SpaceTrader.UI
         public T GetScreen<T>(GameScreen key) where T : class, IScreenUI
             => _screens.TryGetValue(key, out var s) ? s as T : null;
 
-        // ── Canvas construction ───────────────────────────────────────────────
+        // ── Canvas construction ──────────────────────────────────────────
 
         void BuildCanvas()
         {
             var cGo = new GameObject("Canvas");
             cGo.transform.SetParent(transform, false);
             _canvas = cGo.AddComponent<Canvas>();
-            _canvas.renderMode    = RenderMode.ScreenSpaceOverlay;
-            _canvas.sortingOrder  = 0;
+            _canvas.renderMode   = RenderMode.ScreenSpaceOverlay;
+            _canvas.sortingOrder = 0;
 
             var cs = cGo.AddComponent<CanvasScaler>();
-            cs.uiScaleMode          = CanvasScaler.ScaleMode.ScaleWithScreenSize;
-            cs.referenceResolution  = new Vector2(1080, 1920);
-            cs.screenMatchMode      = CanvasScaler.ScreenMatchMode.MatchWidthOrHeight;
-            cs.matchWidthOrHeight   = 0.5f;
+            cs.uiScaleMode         = CanvasScaler.ScaleMode.ScaleWithScreenSize;
+            cs.referenceResolution = new Vector2(1080, 1920);
+            cs.screenMatchMode     = CanvasScaler.ScreenMatchMode.MatchWidthOrHeight;
+            cs.matchWidthOrHeight  = 0.5f;
 
             cGo.AddComponent<GraphicRaycaster>();
 
-            // Full-screen background
-            var bg = new GameObject("Background");
+            var bg    = new GameObject("Background");
             bg.transform.SetParent(cGo.transform, false);
             var bgImg = bg.AddComponent<Image>();
             bgImg.color = ColorTheme.Background;
@@ -101,26 +99,25 @@ namespace SpaceTrader.UI
 
         void RegisterScreens()
         {
-            AddScreen<Screens.TitleScreenUI>      (GameScreen.Title);
-            AddScreen<Screens.NewCommanderUI>     (GameScreen.NewCommander);
-            AddScreen<Screens.DockedUI>           (GameScreen.Docked);
-            AddScreen<Screens.BuyCargoUI>         (GameScreen.BuyCargo);
-            AddScreen<Screens.SellCargoUI>        (GameScreen.SellCargo);
-            AddScreen<Screens.ShipyardUI>         (GameScreen.Shipyard);
-            AddScreen<Screens.BuyEquipmentUI>     (GameScreen.BuyEquipment);
-            AddScreen<Screens.SellEquipmentUI>    (GameScreen.SellEquipment);
-            AddScreen<Screens.PersonnelRosterUI>  (GameScreen.PersonnelRoster);
-            AddScreen<Screens.BankUI>             (GameScreen.Bank);
-            AddScreen<Screens.SystemInfoUI>       (GameScreen.SystemInfo);
-            AddScreen<Screens.CommanderStatusUI>  (GameScreen.CommanderStatus);
-            AddScreen<Screens.GalacticChartUI>    (GameScreen.GalacticChart);
-            AddScreen<Screens.WarpUI>             (GameScreen.Warp);
-            AddScreen<Screens.TravelUI>           (GameScreen.Travel);
-            AddScreen<Screens.EncounterUI>        (GameScreen.Encounter);
-            AddScreen<Screens.SpecialEventUI>     (GameScreen.SpecialEvent);
-            AddScreen<Screens.HighScoresUI>       (GameScreen.HighScores);
+            AddScreen<Screens.TitleScreenUI>     (GameScreen.Title);
+            AddScreen<Screens.NewCommanderUI>    (GameScreen.NewCommander);
+            AddScreen<Screens.DockedUI>          (GameScreen.Docked);
+            AddScreen<Screens.BuyCargoUI>        (GameScreen.BuyCargo);
+            AddScreen<Screens.SellCargoUI>       (GameScreen.SellCargo);
+            AddScreen<Screens.ShipyardUI>        (GameScreen.Shipyard);
+            AddScreen<Screens.BuyEquipmentUI>    (GameScreen.BuyEquipment);
+            AddScreen<Screens.SellEquipmentUI>   (GameScreen.SellEquipment);
+            AddScreen<Screens.PersonnelRosterUI> (GameScreen.PersonnelRoster);
+            AddScreen<Screens.BankUI>            (GameScreen.Bank);
+            AddScreen<Screens.SystemInfoUI>      (GameScreen.SystemInfo);
+            AddScreen<Screens.CommanderStatusUI> (GameScreen.CommanderStatus);
+            AddScreen<Screens.GalacticChartUI>   (GameScreen.GalacticChart);
+            AddScreen<Screens.WarpUI>            (GameScreen.Warp);
+            AddScreen<Screens.TravelUI>          (GameScreen.Travel);
+            AddScreen<Screens.EncounterUI>       (GameScreen.Encounter);
+            AddScreen<Screens.SpecialEventUI>    (GameScreen.SpecialEvent);
+            AddScreen<Screens.HighScoresUI>      (GameScreen.HighScores);
 
-            // Start with all hidden
             foreach (var p in _panels.Values) p.SetActive(false);
         }
 
@@ -143,7 +140,17 @@ namespace SpaceTrader.UI
                 bool show = kv.Key == screen;
                 if (kv.Value.activeSelf != show) kv.Value.SetActive(show);
             }
+
             if (_screens.TryGetValue(screen, out var s)) s.OnShow();
+
+            // ContentSizeFitter and TMP don't recompute when a panel is
+            // re-activated after being hidden. Force a full layout rebuild.
+            if (_panels.TryGetValue(screen, out var activePanel))
+            {
+                Canvas.ForceUpdateCanvases();
+                LayoutRebuilder.ForceRebuildLayoutImmediate(
+                    activePanel.GetComponent<RectTransform>());
+            }
         }
 
         void HandleBack()
@@ -151,10 +158,8 @@ namespace SpaceTrader.UI
             switch (Current)
             {
                 case GameScreen.Title:
-                    // Minimise app on Android
                     break;
                 case GameScreen.Docked:
-                    // No-op; show a "Quit?" dialog in future
                     break;
                 default:
                     NavigateBack();
