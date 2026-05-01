@@ -4,6 +4,7 @@
 
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.InputSystem;
 using UnityEngine.UI;
 
 namespace SpaceTrader.UI
@@ -46,7 +47,7 @@ namespace SpaceTrader.UI
 
         void Update()
         {
-            if (Input.GetKeyDown(KeyCode.Escape)) HandleBack();
+            if (Keyboard.current != null && Keyboard.current.escapeKey.wasPressedThisFrame) HandleBack();
         }
 
         // ── Public navigation API ─────────────────────────────────────────────

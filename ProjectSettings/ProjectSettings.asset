@@ -231,4 +231,4 @@ PlayerSettings:
   playerDataPath:
   forceSRGBBlit: 0
   virtualTexturingSupportEnabled: 0
-  activeInputHandler: 0
+  activeInputHandler: 1

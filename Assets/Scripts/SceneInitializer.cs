@@ -4,6 +4,7 @@
 
 using UnityEngine;
 using UnityEngine.EventSystems;
+using UnityEngine.InputSystem.UI;
 
 namespace SpaceTrader
 {
@@ -22,11 +23,11 @@ namespace SpaceTrader
             Object.DontDestroyOnLoad(uiGo);
             uiGo.AddComponent<UI.UIManager>();
 
-            // EventSystem for UGUI touch/pointer events
+            // EventSystem using the new Input System UI module
             var esGo = new GameObject("EventSystem");
             Object.DontDestroyOnLoad(esGo);
             esGo.AddComponent<EventSystem>();
-            esGo.AddComponent<StandaloneInputModule>();
+            esGo.AddComponent<InputSystemUIInputModule>();
         }
     }
 }
