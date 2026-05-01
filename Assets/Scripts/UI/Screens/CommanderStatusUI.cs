@@ -3,6 +3,7 @@
 
 using TMPro;
 using UnityEngine;
+using UnityEngine.UI;
 using static SpaceTrader.GameConstants;
 
 namespace SpaceTrader.UI.Screens
@@ -24,10 +25,20 @@ namespace SpaceTrader.UI.Screens
             _bodyText = UIFactory.LabelWrap(content, "Body", "",
                 ColorTheme.FontSmall, ColorTheme.TextPrimary, TextAlignmentOptions.Left);
             _bodyText.margin = new Vector4(12, 8, 12, 8);
+
+            // Top-anchored width-stretch — NOT full stretch. Full stretch (anchorMax.y=1)
+            // creates a circular dependency with the VLG ContentSizeFitter: content height
+            // is 0 so child height is 0 so TMP preferred height is 0 so content stays 0.
+            // ContentSizeFitter on this element breaks the cycle: TMP reports its preferred
+            // height independently, VLG reads it, content grows to fit.
             var rt = _bodyText.GetComponent<RectTransform>();
-            rt.anchorMin = Vector2.zero;
-            rt.anchorMax = Vector2.one;
-            rt.sizeDelta = Vector2.zero;
+            rt.anchorMin = new Vector2(0, 1);
+            rt.anchorMax = new Vector2(1, 1);
+            rt.pivot     = new Vector2(0.5f, 1);
+            rt.offsetMin = Vector2.zero;
+            rt.offsetMax = Vector2.zero;
+            var csf = _bodyText.gameObject.AddComponent<ContentSizeFitter>();
+            csf.verticalFit = ContentSizeFitter.FitMode.PreferredSize;
         }
 
         public void OnShow()

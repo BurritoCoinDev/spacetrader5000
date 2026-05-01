@@ -333,8 +333,8 @@ namespace SpaceTrader
                 return G.EncounterType = DragonflyAttack;
             }
 
-            // Police
-            if (pol.StrengthPolice > 0 && GetRandom(MaxPolice) < PoliceStrength(sys))
+            // Police — skip if already inspected and cleared this voyage
+            if (pol.StrengthPolice > 0 && !G.Inspected && GetRandom(MaxPolice) < PoliceStrength(sys))
             {
                 GenerateOpponent(Police);
                 if (G.PoliceRecordScore < DubiousScore || G.WildStatus == 1)
