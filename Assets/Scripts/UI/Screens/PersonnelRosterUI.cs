@@ -28,7 +28,6 @@ namespace SpaceTrader.UI.Screens
                 ColorTheme.FontBody, ColorTheme.TextPositive, TextAlignmentOptions.Left);
             UIFactory.Stretch(_creditsText.rectTransform, 12, 12, 4, 4);
 
-            // Column headers
             var colHdr = UIFactory.Panel(panel.transform, "ColHdr", ColorTheme.HeaderBg);
             UIFactory.SetAnchored(colHdr.GetComponent<RectTransform>(),
                 new Vector2(0, 0.84f), new Vector2(1, 0.88f), Vector2.zero, Vector2.zero);
@@ -65,14 +64,12 @@ namespace SpaceTrader.UI.Screens
 
             var st = GameData.Shiptypes[G.Ship.Type];
 
-            // Count crew slots in use (slot 0 = commander, never shown)
             int crewUsed = 0;
             for (int i = 1; i < MaxCrew; i++)
                 if (G.Ship.Crew[i] >= 0) crewUsed++;
 
             bool crewFull = crewUsed >= st.CrewQuarters - 1;
 
-            // Current crew (excluding commander at slot 0)
             for (int i = 1; i < MaxCrew; i++)
             {
                 if (G.Ship.Crew[i] < 0) continue;
@@ -86,17 +83,13 @@ namespace SpaceTrader.UI.Screens
                 });
             }
 
-            // Available crew at current system (index >= 1, not already hired)
             for (int m = 1; m <= MaxCrewMember && m < GameData.MercenaryNames.Length; m++)
             {
-                // Check if already on crew
                 bool onCrew = false;
                 for (int s = 0; s < MaxCrew; s++)
                     if (G.Ship.Crew[s] == m) { onCrew = true; break; }
                 if (onCrew) continue;
 
-                // Only show mercs at the current system (by simple assignment: merc available if
-                // merc index modulo MaxSolarSystem == currentSystem, matching original logic)
                 if (G.Mercenary[m].CurSystem != G.Commander.CurSystem) continue;
 
                 int mercIdx = m;
@@ -117,9 +110,8 @@ namespace SpaceTrader.UI.Screens
             UnityEngine.Events.UnityAction onClick, bool canHire = true)
         {
             int rowIdx = _rowCount++;
-            var row = UIFactory.Panel(_listContent, $"Merc{mercIdx}",
-                rowIdx % 2 == 0 ? ColorTheme.RowBg : ColorTheme.RowAlt);
-            row.GetComponent<RectTransform>().sizeDelta = new Vector2(0, 72);
+            var row = UIFactory.RowPanel(_listContent, $"Merc{mercIdx}",
+                rowIdx % 2 == 0 ? ColorTheme.RowBg : ColorTheme.RowAlt, 72);
 
             float[] xPos = { 0, 0.28f, 0.36f, 0.44f, 0.52f, 0.60f, 0.78f };
             float[] wArr = { 0.28f, 0.08f, 0.08f, 0.08f, 0.08f, 0.18f, 0.22f };

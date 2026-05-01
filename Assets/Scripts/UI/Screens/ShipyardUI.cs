@@ -20,7 +20,6 @@ namespace SpaceTrader.UI.Screens
             UIFactory.Header(panel.transform, "SHIPYARD",
                 () => UIManager.Instance.NavigateBack());
 
-            // Credits strip
             var strip = UIFactory.Panel(panel.transform, "Strip", ColorTheme.RowBg);
             UIFactory.SetAnchored(strip.GetComponent<RectTransform>(),
                 new Vector2(0, 0.88f), new Vector2(1, 0.935f), Vector2.zero, Vector2.zero);
@@ -33,17 +32,14 @@ namespace SpaceTrader.UI.Screens
                 ColorTheme.FontBody, ColorTheme.TextSecondary, TextAlignmentOptions.Right);
             UIFactory.Stretch(_shipText.rectTransform, 12, 12, 4, 4);
 
-            // Fuel section
             BuildSection(panel.transform, "FUEL",
                 new Vector2(0, 0.72f), new Vector2(1, 0.87f),
                 BuildFuelContent);
 
-            // Repair section
             BuildSection(panel.transform, "REPAIRS",
                 new Vector2(0, 0.54f), new Vector2(1, 0.71f),
                 BuildRepairContent);
 
-            // Buy ship section
             BuildSection(panel.transform, "BUY NEW SHIP",
                 new Vector2(0, 0.02f), new Vector2(1, 0.53f),
                 BuildShipContent);
@@ -103,9 +99,8 @@ namespace SpaceTrader.UI.Screens
             {
                 int idx = i;
                 var st = GameData.Shiptypes[i];
-                var row = UIFactory.Panel(content, $"Ship{i}",
-                    i % 2 == 0 ? ColorTheme.RowBg : ColorTheme.RowAlt);
-                row.GetComponent<RectTransform>().sizeDelta = new Vector2(0, 100);
+                var row = UIFactory.RowPanel(content, $"Ship{i}",
+                    i % 2 == 0 ? ColorTheme.RowBg : ColorTheme.RowAlt, 100);
 
                 var nameL = UIFactory.Label(row.transform, "Name", st.Name,
                     ColorTheme.FontSmall, ColorTheme.TextPrimary);
@@ -172,7 +167,7 @@ namespace SpaceTrader.UI.Screens
         {
             var G  = GameState.Instance;
             var st = GameData.Shiptypes[shipIdx];
-            long tradein = ShipPriceSystem.CurrentShipPriceWithoutCargo(true); // 75% of current ship value
+            long tradein = ShipPriceSystem.CurrentShipPriceWithoutCargo(true);
             long net     = st.Price - tradein;
 
             if (G.Credits < net) return;
