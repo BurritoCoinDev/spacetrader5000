@@ -98,10 +98,8 @@ namespace SpaceTrader.UI.Screens
             for (int i = 0; i < MaxTradeItem; i++)
             {
                 int idx = i;
-                var row = UIFactory.Panel(_listContent, $"Row{i}",
-                    i % 2 == 0 ? ColorTheme.RowBg : ColorTheme.RowAlt);
-                var rrt = row.GetComponent<RectTransform>();
-                rrt.sizeDelta = new Vector2(0, 80);
+                var row = UIFactory.RowPanel(_listContent, $"Row{i}",
+                    i % 2 == 0 ? ColorTheme.RowBg : ColorTheme.RowAlt, 80);
 
                 var w = new RowWidgets { PendingQty = new[] { 0 } };
 
@@ -144,13 +142,7 @@ namespace SpaceTrader.UI.Screens
             }
         }
 
-        public void OnShow()
-        {
-            Refresh();
-            // Force ContentSizeFitter to recompute now that the panel is active.
-            Canvas.ForceUpdateCanvases();
-            LayoutRebuilder.ForceRebuildLayoutImmediate((RectTransform)_listContent);
-        }
+        public void OnShow() => Refresh();
 
         void Refresh()
         {

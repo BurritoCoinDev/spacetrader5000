@@ -17,7 +17,7 @@ namespace SpaceTrader.UI.Screens
         struct RowData
         {
             public TextMeshProUGUI Name, SellPrice, Held, Profit;
-            public UnityEngine.UI.Button SellBtn, DumpBtn;
+            public UnityEngine.UI.Button SellBtn;
             public int Index;
         }
 
@@ -71,9 +71,8 @@ namespace SpaceTrader.UI.Screens
             for (int i = 0; i < MaxTradeItem; i++)
             {
                 int idx = i;
-                var row = UIFactory.Panel(_listContent, $"Row{i}",
-                    i % 2 == 0 ? ColorTheme.RowBg : ColorTheme.RowAlt);
-                row.GetComponent<UnityEngine.RectTransform>().sizeDelta = new Vector2(0, 80);
+                var row = UIFactory.RowPanel(_listContent, $"Row{i}",
+                    i % 2 == 0 ? ColorTheme.RowBg : ColorTheme.RowAlt, 80);
 
                 var d = new RowData { Index = i };
 

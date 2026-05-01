@@ -103,9 +103,8 @@ namespace SpaceTrader.UI.Screens
             {
                 int idx = i;
                 var st = GameData.Shiptypes[i];
-                var row = UIFactory.Panel(content, $"Ship{i}",
-                    i % 2 == 0 ? ColorTheme.RowBg : ColorTheme.RowAlt);
-                row.GetComponent<RectTransform>().sizeDelta = new Vector2(0, 100);
+                var row = UIFactory.RowPanel(content, $"Ship{i}",
+                    i % 2 == 0 ? ColorTheme.RowBg : ColorTheme.RowAlt, 100);
 
                 var nameL = UIFactory.Label(row.transform, "Name", st.Name,
                     ColorTheme.FontSmall, ColorTheme.TextPrimary);
@@ -172,7 +171,7 @@ namespace SpaceTrader.UI.Screens
         {
             var G  = GameState.Instance;
             var st = GameData.Shiptypes[shipIdx];
-            long tradein = ShipPriceSystem.CurrentShipPriceWithoutCargo(true); // 75% of current ship value
+            long tradein = ShipPriceSystem.CurrentShipPriceWithoutCargo(true);
             long net     = st.Price - tradein;
 
             if (G.Credits < net) return;

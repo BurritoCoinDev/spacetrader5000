@@ -65,9 +65,8 @@ namespace SpaceTrader.UI.Screens
 
         void BuildEquipRows(Transform content, string header, int category)
         {
-            // Section divider
-            var divRow = UIFactory.Panel(content, $"{header}Hdr", ColorTheme.HeaderBg);
-            divRow.GetComponent<RectTransform>().sizeDelta = new Vector2(0, 36);
+            // Section divider header
+            var divRow = UIFactory.RowPanel(content, $"{header}Hdr", ColorTheme.HeaderBg, 36);
             var divLbl = UIFactory.Label(divRow.transform, "Lbl", header,
                 ColorTheme.FontTiny, ColorTheme.TextAccent);
             UIFactory.Stretch(divLbl.rectTransform, 8, 8, 2, 2);
@@ -91,9 +90,8 @@ namespace SpaceTrader.UI.Screens
                              :                 GameData.Gadgettypes[i].TechLevel;
 
                 int rowIdx = _items.Count;
-                var row = UIFactory.Panel(content, $"{header}Row{i}",
-                    rowIdx % 2 == 0 ? ColorTheme.RowBg : ColorTheme.RowAlt);
-                row.GetComponent<RectTransform>().sizeDelta = new Vector2(0, 72);
+                var row = UIFactory.RowPanel(content, $"{header}Row{i}",
+                    rowIdx % 2 == 0 ? ColorTheme.RowBg : ColorTheme.RowAlt, 72);
 
                 var nameL = UIFactory.Label(row.transform, "Name", name,
                     ColorTheme.FontSmall, ColorTheme.TextPrimary);

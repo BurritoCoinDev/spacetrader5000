@@ -94,15 +94,15 @@ namespace SpaceTrader.UI.Screens
                     "No equipment installed.",
                     ColorTheme.FontBody, ColorTheme.TextDisabled, TextAlignmentOptions.Center);
                 none.GetComponent<RectTransform>().sizeDelta = new Vector2(0, 80);
+                none.gameObject.AddComponent<LayoutElement>().preferredHeight = 80;
             }
         }
 
         void AddRow(string name, string itemName, long refund, UnityEngine.Events.UnityAction onClick)
         {
             int rowIdx = _rowCount++;
-            var row = UIFactory.Panel(_listContent, name,
-                rowIdx % 2 == 0 ? ColorTheme.RowBg : ColorTheme.RowAlt);
-            row.GetComponent<RectTransform>().sizeDelta = new Vector2(0, 72);
+            var row = UIFactory.RowPanel(_listContent, name,
+                rowIdx % 2 == 0 ? ColorTheme.RowBg : ColorTheme.RowAlt, 72);
 
             var nameL = UIFactory.Label(row.transform, "Name", itemName,
                 ColorTheme.FontSmall, ColorTheme.TextPrimary);

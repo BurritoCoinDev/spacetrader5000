@@ -47,10 +47,8 @@ namespace SpaceTrader.UI.Screens
 
             for (int i = 0; i < MaxTradeItem; i++)
             {
-                int idx = i;
-                var row = UIFactory.Panel(content, $"Row{i}",
-                    i % 2 == 0 ? ColorTheme.RowBg : ColorTheme.RowAlt);
-                row.GetComponent<RectTransform>().sizeDelta = new Vector2(0, 72);
+                var row = UIFactory.RowPanel(content, $"Row{i}",
+                    i % 2 == 0 ? ColorTheme.RowBg : ColorTheme.RowAlt, 72);
 
                 var nameL = UIFactory.Label(row.transform, "Name", GameData.Tradeitems[i].Name,
                     ColorTheme.FontSmall, ColorTheme.TextPrimary);

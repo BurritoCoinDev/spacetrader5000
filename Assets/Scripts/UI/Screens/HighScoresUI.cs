@@ -3,6 +3,7 @@
 
 using TMPro;
 using UnityEngine;
+using UnityEngine.UI;
 using static SpaceTrader.GameConstants;
 
 namespace SpaceTrader.UI.Screens
@@ -53,11 +54,9 @@ namespace SpaceTrader.UI.Screens
                 any = true;
 
                 long score = TravelerSystem.GetScore(hs.Status, hs.Days, hs.Worth, hs.Difficulty);
-                string endStr = hs.Status == Killed ? "Killed" : hs.Status == Retired ? "Retired" : "Moon";
 
-                var row = UIFactory.Panel(_listContent, $"Score{i}",
-                    i % 2 == 0 ? ColorTheme.RowBg : ColorTheme.RowAlt);
-                row.GetComponent<RectTransform>().sizeDelta = new Vector2(0, 80);
+                var row = UIFactory.RowPanel(_listContent, $"Score{i}",
+                    i % 2 == 0 ? ColorTheme.RowBg : ColorTheme.RowAlt, 80);
 
                 string[] vals   = { $"{i + 1}.", hs.Name, score.ToString("N0"), UIFactory.Cr(hs.Worth), hs.Days.ToString(), GameData.DifficultyLevel[hs.Difficulty] };
                 float[]  xPos   = { 0,   0.06f, 0.32f, 0.50f, 0.68f, 0.82f };
@@ -80,6 +79,7 @@ namespace SpaceTrader.UI.Screens
                     "No scores recorded yet.",
                     ColorTheme.FontBody, ColorTheme.TextDisabled, TextAlignmentOptions.Center);
                 none.GetComponent<RectTransform>().sizeDelta = new Vector2(0, 80);
+                none.gameObject.AddComponent<LayoutElement>().preferredHeight = 80;
             }
         }
     }

@@ -63,6 +63,20 @@ namespace SpaceTrader.UI
             return go;
         }
 
+        // Creates a Panel sized for use as a scroll-list row.
+        // Image doesn't implement ILayoutElement, so without LayoutElement the
+        // VerticalLayoutGroup ContentSizeFitter sees zero height and collapses.
+        public static GameObject RowPanel(Transform parent, string name, Color color, float height)
+        {
+            var go = Panel(parent, name, color);
+            var rt = go.GetComponent<RectTransform>();
+            rt.sizeDelta = new Vector2(0, height);
+            var le = go.AddComponent<LayoutElement>();
+            le.preferredHeight = height;
+            le.minHeight       = height;
+            return go;
+        }
+
         // ── Text ─────────────────────────────────────────────────────────────
 
         public static TextMeshProUGUI Label(Transform parent, string name,
