@@ -11,10 +11,11 @@ namespace SpaceTrader.UI.Screens
 {
     public class ShortRangeChartUI : MonoBehaviour, IScreenUI
     {
-        const float ViewRadius  = 50f; // parsecs shown each side
-        const int   CirclePts   = 36;  // dots used to draw fuel-range circle
+        const float ViewRadius  = 50f;  // parsecs shown each side
+        const int   CirclePts   = 36;   // dots used to draw fuel-range circle
         const float DotSize     = 14f;
         const float CurDotSize  = 18f;
+        const float HitSize     = 60f;  // transparent touch target around each dot
 
         RectTransform _mapRect;
         TextMeshProUGUI _fuelText;
@@ -56,15 +57,23 @@ namespace SpaceTrader.UI.Screens
             {
                 int idx = i;
 
-                var dot    = UIFactory.Panel(mapGo.transform, $"Dot{i}", Color.grey);
-                var rt     = dot.GetComponent<RectTransform>();
-                rt.sizeDelta   = new Vector2(DotSize, DotSize);
-                rt.anchorMin   = rt.anchorMax = new Vector2(0.5f, 0.5f);
-                _dotRt[i]  = rt;
-                _dotImg[i] = dot.GetComponent<Image>();
+                // Transparent hit area — large enough for a finger tap
+                var hit    = UIFactory.Panel(mapGo.transform, $"Hit{i}", Color.clear);
+                var rt     = hit.GetComponent<RectTransform>();
+                rt.sizeDelta  = new Vector2(HitSize, HitSize);
+                rt.anchorMin  = rt.anchorMax = new Vector2(0.5f, 0.5f);
+                _dotRt[i]     = rt;
 
-                var dotBtn = dot.AddComponent<Button>();
+                var dotBtn = hit.AddComponent<Button>();
                 dotBtn.onClick.AddListener(() => SelectSystem(idx));
+
+                // Visual dot centered inside the hit area
+                var dot    = UIFactory.Panel(hit.transform, $"Dot{i}", Color.grey);
+                var drt    = dot.GetComponent<RectTransform>();
+                drt.sizeDelta    = new Vector2(DotSize, DotSize);
+                drt.anchorMin    = drt.anchorMax = new Vector2(0.5f, 0.5f);
+                drt.anchoredPosition = Vector2.zero;
+                _dotImg[i] = dot.GetComponent<Image>();
 
                 // Name label (small, to the right of the dot)
                 var lbl = UIFactory.Label(mapGo.transform, $"Lbl{i}", "",
@@ -129,8 +138,10 @@ namespace SpaceTrader.UI.Screens
                 bool inRange   = dist <= fuel && !isCurrent;
                 bool wormhole  = !isCurrent && TravelerSystem.WormholeExists(cur, i);
 
-                _dotRt[i].sizeDelta = isCurrent ? new Vector2(CurDotSize, CurDotSize)
-                                                 : new Vector2(DotSize, DotSize);
+                // Visual dot size (hit area stays at HitSize)
+                var visRt = _dotRt[i].GetChild(0).GetComponent<RectTransform>();
+                visRt.sizeDelta = isCurrent ? new Vector2(CurDotSize, CurDotSize)
+                                            : new Vector2(DotSize, DotSize);
 
                 if (isCurrent)
                     _dotImg[i].color = ColorTheme.TextAccent;
