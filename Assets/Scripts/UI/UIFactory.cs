@@ -168,16 +168,12 @@ namespace SpaceTrader.UI
             sr.horizontal = false;
 
             var viewport = new GameObject("Viewport"); viewport.transform.SetParent(go.transform, false);
-            var vmask    = viewport.AddComponent<Mask>();
-            vmask.showMaskGraphic = false;
-            var vimg = viewport.AddComponent<Image>(); vimg.color = Color.clear;
-            var vrt  = viewport.GetComponent<RectTransform>();
+            viewport.AddComponent<RectMask2D>();
+            var vrt = viewport.GetComponent<RectTransform>();
             Stretch(vrt);
 
             var content = new GameObject("Content"); content.transform.SetParent(viewport.transform, false);
             var vlg = content.AddComponent<VerticalLayoutGroup>();
-            // childControlHeight=true so VLG reads LayoutElement.preferredHeight from rows
-            // and ContentSizeFitter computes the correct total height.
             vlg.childControlWidth     = true;  vlg.childControlHeight     = true;
             vlg.childForceExpandWidth = true;  vlg.childForceExpandHeight = false;
             vlg.spacing = 2;

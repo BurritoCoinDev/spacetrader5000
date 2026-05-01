@@ -91,15 +91,11 @@ namespace SpaceTrader.UI.Screens
                 Destroy(child.gameObject);
             _rows.Clear();
 
-            // DIAGNOSTIC: bright row colors so we can confirm rendering visually.
-            Color colA = new Color(0.85f, 0.20f, 0.20f, 1f); // bright red
-            Color colB = new Color(0.20f, 0.40f, 0.85f, 1f); // bright blue
-
             for (int i = 0; i < MaxTradeItem; i++)
             {
                 int idx = i;
                 var row = UIFactory.RowPanel(_listContent, $"Row{i}",
-                    i % 2 == 0 ? colA : colB, 80);
+                    i % 2 == 0 ? ColorTheme.RowBg : ColorTheme.RowAlt, 80);
 
                 var w = new RowWidgets { PendingQty = new[] { 0 } };
 
@@ -140,15 +136,9 @@ namespace SpaceTrader.UI.Screens
 
                 _rows.Add(w);
             }
-            Debug.Log($"[BuyCargo] BuildRows complete: {_rows.Count} rows under {_listContent.name}");
         }
 
-        public void OnShow()
-        {
-            Refresh();
-            var crt = _listContent.GetComponent<RectTransform>();
-            Debug.Log($"[BuyCargo] OnShow: content size={crt.rect.size}, child count={_listContent.childCount}");
-        }
+        public void OnShow() => Refresh();
 
         void Refresh()
         {
