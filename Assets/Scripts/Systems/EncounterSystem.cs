@@ -311,6 +311,12 @@ namespace SpaceTrader
                 return G.EncounterType = ScarabAttack;
             }
 
+            if (G.ArtifactOnBoard && GetRandom(100) < 30)
+            {
+                GenerateOpponent(Mantis);
+                return G.EncounterType = Mantis;
+            }
+
             // Police — skip if already inspected and cleared this voyage
             if (pol.StrengthPolice > 0 && !G.Inspected && GetRandom(MaxPolice) < PoliceStrength(sys))
             {

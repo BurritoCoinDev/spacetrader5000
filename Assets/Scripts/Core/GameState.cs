@@ -86,7 +86,7 @@ namespace SpaceTrader
         public int   ExperimentStatus       = 0;
         public int   FabricRipProbability   = 0;
         public int   VeryRareEncounter      = 0;
-        public int   ReactorStatus          = 0;
+        public int   ReactorStatus          = 0;  // 0=none, 1-20=active, -1=delivered
         public int   TrackedSystem          = -1;
         public int   ScarabStatus           = 0;
         public bool  AlwaysIgnoreTradeInOrbit = false;

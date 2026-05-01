@@ -128,6 +128,9 @@ namespace SpaceTrader
             for (int i = 0; i < MaxGadget; i++) newShip.Gadget[i]  = -1;
             for (int i = 0; i < MaxCrew; i++)   newShip.Crew[i]    = -1;
             newShip.Crew[0] = G.Ship.Crew[0]; // commander stays
+            int cSlot = 1;
+            for (int i = 1; i < MaxCrew && cSlot < stype.CrewQuarters; i++)
+                if (G.Ship.Crew[i] >= 0) newShip.Crew[cSlot++] = G.Ship.Crew[i];
 
             int wSlot = 0;
             for (int i = 0; i < MaxWeapon && wSlot < stype.WeaponSlots; i++)

@@ -135,7 +135,7 @@ namespace SpaceTrader.UI.Screens
                 {
                     d.SellPrice.text  = sp > 0 ? UIFactory.Cr(sp) : "---";
                     d.Profit.text     = "";
-                    d.SellBtn.interactable = hasCargo;
+                    d.SellBtn.interactable = false;
                 }
             }
         }

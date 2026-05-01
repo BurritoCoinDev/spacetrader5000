@@ -236,6 +236,16 @@ namespace SpaceTrader
             if (G.TrackAutoOff && G.TrackedSystem == G.WarpSystem)
                 G.TrackedSystem = -1;
 
+            // Quest deliveries on arrival
+            if (G.JarekStatus == 1 && G.WarpSystem == DaledSystem)
+                G.JarekStatus = 2;
+
+            if (G.ReactorStatus > 0 && G.ReactorStatus < 21 && G.WarpSystem == NixSystem)
+            {
+                G.Credits       += 1500L * (G.Difficulty + 1);
+                G.ReactorStatus  = -1; // -1 = delivered, unlocks ReactorDelivered event
+            }
+
             ShuffleStatus();
             DeterminePrices(G.WarpSystem);
 
@@ -287,7 +297,8 @@ namespace SpaceTrader
             long insMon  = MoneySystem.InsuranceMoney();
 
             if (G.Insurance && insMon + merMon > G.Credits)          return WarpResult.CantPayInsurance;
-            if (insMon + merMon + wormTax > G.Credits)               return WarpResult.CantPayWormholeTax;
+            if (wormTax > 0 && insMon + merMon + wormTax > G.Credits) return WarpResult.CantPayWormholeTax;
+            if (!G.Insurance && merMon > G.Credits)                   return WarpResult.CantPayMercenaries;
 
             if (!viaSingularity)
             {

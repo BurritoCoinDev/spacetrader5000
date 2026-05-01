@@ -79,8 +79,10 @@ namespace SpaceTrader.UI.Screens
                 case ScarabDestroyed:       return G.ScarabStatus == 2;
                 case GetHullUpgraded:       return G.ScarabStatus == 2;
                 case AmbassadorJarek:       return G.JarekStatus == 0;
+                case JarekGetsOut:          return G.JarekStatus == 2;
                 case TransportWild:         return G.WildStatus == 0;
                 case GetReactor:            return G.ReactorStatus == 0;
+                case ReactorDelivered:      return G.ReactorStatus == -1;
                 default:                    return true;
             }
         }
@@ -153,6 +155,14 @@ namespace SpaceTrader.UI.Screens
                     _titleText.text = "Hull Upgrade";
                     _descText.text  = "An engineer can upgrade your hull for free. Accept the upgrade?";
                     break;
+                case JarekGetsOut:
+                    _titleText.text = "Jarek Gets Out";
+                    _descText.text  = "Ambassador Jarek thanks you for the safe passage to Daled. His contacts improve your trading reputation.";
+                    break;
+                case ReactorDelivered:
+                    _titleText.text = "Reactor Delivered";
+                    _descText.text  = "The Nix government thanks you for delivering the reactor. They offer a reward.";
+                    break;
                 default:
                     _titleText.text = "Special Event";
                     _descText.text  = $"A special event (#{evt}) occurs at this system.";
@@ -214,10 +224,15 @@ namespace SpaceTrader.UI.Screens
                     break;
 
                 case DragonflyDestroyed:
-                    ShipyardSystem.InstallWeapon(MilitaryLaserWeapon);
+                {
+                    // Free reward weapon — bypass InstallWeapon which charges credits
+                    var ws = ShipyardSystem.GetFirstEmptySlot(
+                        GameData.Shiptypes[G.Ship.Type].WeaponSlots, G.Ship.Weapon);
+                    if (ws >= 0) G.Ship.Weapon[ws] = MilitaryLaserWeapon;
                     G.Credits += 1000L * (G.Difficulty + 1);
                     G.PoliceRecordScore += 1;
                     break;
+                }
 
                 case Scarab:
                     G.ScarabStatus = 1;
@@ -232,8 +247,13 @@ namespace SpaceTrader.UI.Screens
                     break;
 
                 case GetFuelCompactor:
-                    ShipyardSystem.InstallGadget(FuelCompactor);
+                {
+                    // Free reward gadget — bypass InstallGadget which charges credits
+                    var gs = ShipyardSystem.GetFirstEmptySlot(
+                        GameData.Shiptypes[G.Ship.Type].GadgetSlots, G.Ship.Gadget);
+                    if (gs >= 0) G.Ship.Gadget[gs] = FuelCompactor;
                     break;
+                }
 
                 case TransportWild:
                     G.WildStatus = 1;
@@ -246,6 +266,16 @@ namespace SpaceTrader.UI.Screens
                 case GetHullUpgraded:
                     G.Ship.Hull = GameMath.Min(G.Ship.Hull + UpgradedHull, ShipyardSystem.GetHullStrength() + UpgradedHull);
                     G.HullUpgraded = true;
+                    break;
+
+                case JarekGetsOut:
+                    G.JarekStatus = 3; // quest complete
+                    G.PoliceRecordScore += 1;
+                    break;
+
+                case ReactorDelivered:
+                    G.Credits += 1000L * (G.Difficulty + 1);
+                    G.ReactorStatus = 0; // fully resolved
                     break;
 
                 case MedicineDelivery:
