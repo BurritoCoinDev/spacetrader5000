@@ -20,7 +20,7 @@ namespace SpaceTrader.UI.Screens
             public TextMeshProUGUI Name, Price, Avail, Held;
             public Button DecBtn, IncBtn;
             public TextMeshProUGUI QtyLabel;
-            public int[] PendingQty; // single-element array for ref capture
+            public int[] PendingQty;
         }
 
         public void Initialize(GameObject panel)
@@ -29,7 +29,6 @@ namespace SpaceTrader.UI.Screens
             UIFactory.Header(panel.transform, "BUY CARGO",
                 () => UIManager.Instance.NavigateBack());
 
-            // Summary strip
             var strip = UIFactory.Panel(panel.transform, "Strip", ColorTheme.RowBg);
             UIFactory.SetAnchored(strip.GetComponent<RectTransform>(),
                 new Vector2(0, 0.88f), new Vector2(1, 0.935f), Vector2.zero, Vector2.zero);
@@ -42,19 +41,16 @@ namespace SpaceTrader.UI.Screens
                 ColorTheme.FontBody, ColorTheme.TextSecondary, TextAlignmentOptions.Right);
             UIFactory.Stretch(_baysText.rectTransform, 12, 12, 4, 4);
 
-            // Column headers
             var colHdr = UIFactory.Panel(panel.transform, "ColHdr", ColorTheme.HeaderBg);
             UIFactory.SetAnchored(colHdr.GetComponent<RectTransform>(),
                 new Vector2(0, 0.84f), new Vector2(1, 0.88f), Vector2.zero, Vector2.zero);
             BuildColumnHeaders(colHdr.transform);
 
-            // Scroll list
             var (scroll, content) = UIFactory.ScrollView(panel.transform, "CargoList");
             UIFactory.SetAnchored(scroll.GetComponent<RectTransform>(),
                 new Vector2(0, 0.10f), new Vector2(1, 0.84f), Vector2.zero, Vector2.zero);
             _listContent = content;
 
-            // Buy All / Clear buttons
             var btnRow = UIFactory.TransparentPanel(panel.transform, "BtnRow");
             UIFactory.SetAnchored(btnRow.GetComponent<RectTransform>(),
                 new Vector2(0.02f, 0.02f), new Vector2(0.98f, 0.10f), Vector2.zero, Vector2.zero);
@@ -95,11 +91,15 @@ namespace SpaceTrader.UI.Screens
                 Destroy(child.gameObject);
             _rows.Clear();
 
+            // DIAGNOSTIC: bright row colors so we can confirm rendering visually.
+            Color colA = new Color(0.85f, 0.20f, 0.20f, 1f); // bright red
+            Color colB = new Color(0.20f, 0.40f, 0.85f, 1f); // bright blue
+
             for (int i = 0; i < MaxTradeItem; i++)
             {
                 int idx = i;
                 var row = UIFactory.RowPanel(_listContent, $"Row{i}",
-                    i % 2 == 0 ? ColorTheme.RowBg : ColorTheme.RowAlt, 80);
+                    i % 2 == 0 ? colA : colB, 80);
 
                 var w = new RowWidgets { PendingQty = new[] { 0 } };
 
@@ -140,9 +140,15 @@ namespace SpaceTrader.UI.Screens
 
                 _rows.Add(w);
             }
+            Debug.Log($"[BuyCargo] BuildRows complete: {_rows.Count} rows under {_listContent.name}");
         }
 
-        public void OnShow() => Refresh();
+        public void OnShow()
+        {
+            Refresh();
+            var crt = _listContent.GetComponent<RectTransform>();
+            Debug.Log($"[BuyCargo] OnShow: content size={crt.rect.size}, child count={_listContent.childCount}");
+        }
 
         void Refresh()
         {
@@ -169,8 +175,6 @@ namespace SpaceTrader.UI.Screens
                 w.QtyLabel.text = "0";
                 w.DecBtn.interactable = canBuy;
                 w.IncBtn.interactable = canBuy;
-                // Always render item names in TextPrimary so the list is clearly
-                // visible even when items aren't currently purchasable.
                 w.Name.color = ColorTheme.TextPrimary;
             }
         }
