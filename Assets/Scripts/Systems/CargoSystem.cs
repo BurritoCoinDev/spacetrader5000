@@ -33,7 +33,7 @@ namespace SpaceTrader
             if (G.BuyPrice[index] <= 0) return 0;
             int byMoney = G.Credits >= G.BuyPrice[index]
                 ? (int)(G.Credits / G.BuyPrice[index]) : 0;
-            int bySpace  = FreeCargoBays();
+            int bySpace  = GameMath.Max(0, FreeCargoBays() - G.LeaveEmpty);
             int byStock  = G.SolarSystem[G.Commander.CurSystem].Qty[index];
             return GameMath.Min(GameMath.Min(byMoney, bySpace), byStock);
         }
@@ -54,6 +54,8 @@ namespace SpaceTrader
                                     G.Ship.Cargo[index];
         }
 
+        // The SellCargo method shadows the GameConstants.SellCargo constant in
+        // this scope, so the operation constants must be fully qualified.
         public static void SellCargo(int index, int amount, int operation)
         {
             if (amount <= 0 || amount > G.Ship.Cargo[index]) return;

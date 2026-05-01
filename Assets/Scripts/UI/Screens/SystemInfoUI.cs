@@ -15,7 +15,6 @@ namespace SpaceTrader.UI.Screens
             UIFactory.Header(panel.transform, "SYSTEM INFO",
                 () => UIManager.Instance.NavigateBack());
 
-            // Info text block
             var infoPanel = UIFactory.Panel(panel.transform, "InfoBlock", ColorTheme.PanelBg);
             UIFactory.SetAnchored(infoPanel.GetComponent<RectTransform>(),
                 new Vector2(0, 0.72f), new Vector2(1, 0.88f), new Vector2(8, 4), new Vector2(-8, -4));
@@ -24,7 +23,6 @@ namespace SpaceTrader.UI.Screens
             infoText.name = "InfoText";
             UIFactory.Stretch(infoText.rectTransform, 8, 8, 4, 4);
 
-            // Price table header
             var colHdr = UIFactory.Panel(panel.transform, "ColHdr", ColorTheme.HeaderBg);
             UIFactory.SetAnchored(colHdr.GetComponent<RectTransform>(),
                 new Vector2(0, 0.68f), new Vector2(1, 0.72f), Vector2.zero, Vector2.zero);
@@ -81,7 +79,7 @@ namespace SpaceTrader.UI.Screens
             var sys = G.CurrentSystem;
             var pol = GameData.PoliticsTypes[sys.Politics];
 
-            var panel    = gameObject.transform.parent;
+            var panel    = transform;
             var infoText = panel.Find("InfoBlock/InfoText")?.GetComponent<TextMeshProUGUI>();
             if (infoText != null)
             {

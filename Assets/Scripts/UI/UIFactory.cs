@@ -11,7 +11,7 @@ namespace SpaceTrader.UI
 {
     public static class UIFactory
     {
-        // ── Layout helpers ────────────────────────────────────────────────────
+        // ── Layout helpers ────────────────────────────────────────────────
 
         public static void Stretch(RectTransform rt, float l = 0, float r = 0, float t = 0, float b = 0)
         {
@@ -44,14 +44,14 @@ namespace SpaceTrader.UI
             rt.sizeDelta = new Vector2(w, h);
         }
 
-        // ── Containers ────────────────────────────────────────────────────────
+        // ── Containers ───────────────────────────────────────────────────
 
-        public static GameObject Panel(Transform parent, string name, Color color = default)
+        public static GameObject Panel(Transform parent, string name, Color? color = null)
         {
             var go  = new GameObject(name);
             go.transform.SetParent(parent, false);
             var img = go.AddComponent<Image>();
-            img.color = color == default ? ColorTheme.PanelBg : color;
+            img.color = color ?? ColorTheme.PanelBg;
             return go;
         }
 
@@ -105,7 +105,7 @@ namespace SpaceTrader.UI
             return tmp;
         }
 
-        // ── Buttons ───────────────────────────────────────────────────────────
+        // ── Buttons ──────────────────────────────────────────────────────
 
         public static Button Btn(Transform parent, string name, string label,
             UnityAction onClick, Color bgColor = default, int fontSize = ColorTheme.FontButton)
@@ -132,7 +132,7 @@ namespace SpaceTrader.UI
             UnityAction onClick, Color bgColor = default)
             => Btn(parent, name, label, onClick, bgColor, ColorTheme.FontButtonSm);
 
-        // ── Input Field ───────────────────────────────────────────────────────
+        // ── Input Field ──────────────────────────────────────────────────
 
         public static TMP_InputField InputField(Transform parent, string name, string placeholder)
         {
@@ -159,7 +159,7 @@ namespace SpaceTrader.UI
             return inp;
         }
 
-        // ── Scroll view ───────────────────────────────────────────────────────
+        // ── Scroll view ──────────────────────────────────────────────────
 
         public static (ScrollRect scroll, Transform content) ScrollView(Transform parent, string name)
         {
@@ -168,15 +168,13 @@ namespace SpaceTrader.UI
             sr.horizontal = false;
 
             var viewport = new GameObject("Viewport"); viewport.transform.SetParent(go.transform, false);
-            var vmask    = viewport.AddComponent<Mask>();
-            vmask.showMaskGraphic = false;
-            var vimg = viewport.AddComponent<Image>(); vimg.color = Color.clear;
-            var vrt  = viewport.GetComponent<RectTransform>();
+            viewport.AddComponent<RectMask2D>();
+            var vrt = viewport.GetComponent<RectTransform>();
             Stretch(vrt);
 
             var content = new GameObject("Content"); content.transform.SetParent(viewport.transform, false);
             var vlg = content.AddComponent<VerticalLayoutGroup>();
-            vlg.childControlWidth     = true;  vlg.childControlHeight     = false;
+            vlg.childControlWidth     = true;  vlg.childControlHeight     = true;
             vlg.childForceExpandWidth = true;  vlg.childForceExpandHeight = false;
             vlg.spacing = 2;
             var csf = content.AddComponent<ContentSizeFitter>();
@@ -193,7 +191,7 @@ namespace SpaceTrader.UI
             return (sr, content.transform);
         }
 
-        // ── Divider ───────────────────────────────────────────────────────────
+        // ── Divider ──────────────────────────────────────────────────────
 
         public static Image Divider(Transform parent, string name = "Divider")
         {
@@ -205,7 +203,7 @@ namespace SpaceTrader.UI
             return img;
         }
 
-        // ── Progress bar ─────────────────────────────────────────────────────
+        // ── Progress bar ──────────────────────────────────────────────────
 
         public static Slider ProgressBar(Transform parent, string name, Color fillColor)
         {
@@ -230,7 +228,7 @@ namespace SpaceTrader.UI
             return sld;
         }
 
-        // ── Header bar ────────────────────────────────────────────────────────
+        // ── Header bar ────────────────────────────────────────────────────
 
         // Creates a horizontal header with a back button on the left and a title label.
         // Returns the title TextMeshProUGUI for later updates.
@@ -255,7 +253,7 @@ namespace SpaceTrader.UI
             return lbl;
         }
 
-        // ── Formatted credit string ───────────────────────────────────────────
+        // ── Formatted credit string ────────────────────────────────────────────
 
         public static string Cr(long amount) => $"{amount:N0} cr.";
     }

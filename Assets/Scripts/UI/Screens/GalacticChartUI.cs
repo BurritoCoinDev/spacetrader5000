@@ -4,6 +4,7 @@
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
+using SpaceTrader;
 using static SpaceTrader.GameConstants;
 
 namespace SpaceTrader.UI.Screens
@@ -120,6 +121,7 @@ namespace SpaceTrader.UI.Screens
 
         void UpdateSelection()
         {
+            if (_selectedSystem < 0 || _selectedSystem >= MaxSolarSystem) return;
             var G    = GameState.Instance;
             int cur  = G.Commander.CurSystem;
             int fuel = G.Ship.Fuel;
@@ -128,7 +130,7 @@ namespace SpaceTrader.UI.Screens
 
             string name = GameData.SolarSystemNames[sys.NameIndex];
             long dist   = GameMath.RealDistance(G.SolarSystem[cur], sys);
-            bool inRange = dist <= fuel;
+            bool inRange = dist <= fuel || TravelerSystem.WormholeExists(cur, _selectedSystem);
             bool isHere  = _selectedSystem == cur;
 
             string info = visited

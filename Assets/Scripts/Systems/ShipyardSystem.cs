@@ -11,7 +11,10 @@ namespace SpaceTrader
         static GameState G => GameState.Instance;
 
         public static long GetHullStrength()
-            => GameData.Shiptypes[G.Ship.Type].HullStrength;
+        {
+            long base_ = GameData.Shiptypes[G.Ship.Type].HullStrength;
+            return G.HullUpgraded ? base_ + UpgradedHull : base_;
+        }
 
         public static long RepairCostFor(int amount)
         {
@@ -153,6 +156,7 @@ namespace SpaceTrader
             }
 
             G.Ship = newShip;
+            G.HullUpgraded = false;
         }
     }
 }

@@ -48,24 +48,20 @@ namespace SpaceTrader.UI.Screens
             var ship = G.Ship;
             var st   = GameData.Shiptypes[ship.Type];
 
-            // Police record name
             string polRec = "Clean";
             foreach (var pr in GameData.PoliceRecords)
                 if (G.PoliceRecordScore >= pr.MinScore) polRec = pr.Name;
 
-            // Reputation name
             string repName = "Harmless";
             foreach (var r in GameData.Reputations)
                 if (G.ReputationScore >= r.MinScore) repName = r.Name;
 
-            // Effective skills
             int pilot    = SkillSystem.PilotSkill(ship);
             int fighter  = SkillSystem.FighterSkill(ship);
             int trader   = SkillSystem.TraderSkill(ship);
             int engineer = SkillSystem.EngineerSkill(ship);
 
-            // Weapons
-            System.Text.StringBuilder sb = new System.Text.StringBuilder();
+            var sb = new System.Text.StringBuilder();
             sb.AppendLine($"Commander:  {G.NameCommander}");
             sb.AppendLine($"Difficulty: {GameData.DifficultyLevel[G.Difficulty]}");
             sb.AppendLine($"Days:       {G.Days}");
@@ -88,7 +84,6 @@ namespace SpaceTrader.UI.Screens
             sb.AppendLine($"  Fuel:    {ship.Fuel}/{FuelSystem.GetFuelTanks()}");
             sb.AppendLine($"  Cargo:   {CargoSystem.FilledCargoBays()}/{CargoSystem.TotalCargoBays()}");
 
-            // Equipment
             for (int i = 0; i < MaxWeapon; i++)
                 if (ship.Weapon[i] >= 0) sb.AppendLine($"  Weapon:  {GameData.Weapontypes[ship.Weapon[i]].Name}");
             for (int i = 0; i < MaxShield; i++)

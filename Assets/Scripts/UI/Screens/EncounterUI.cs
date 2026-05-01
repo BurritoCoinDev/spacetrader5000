@@ -214,6 +214,10 @@ namespace SpaceTrader.UI.Screens
             int pil = SkillSystem.PilotSkill(G.Ship);
             int oppPil = SkillSystem.PilotSkill(G.Opponent);
 
+            // Attempting to flee from police always hurts your record (successful or not)
+            if (EncounterSystem.IsPolice(G.EncounterType))
+                G.PoliceRecordScore += FleeFromInspection;
+
             if (GameMath.GetRandom(pil + oppPil) >= oppPil)
             {
                 // Escaped
@@ -226,8 +230,6 @@ namespace SpaceTrader.UI.Screens
             bool destroyed = EncounterSystem.ExecuteAttack(G.Opponent, G.Ship, false, true);
             if (destroyed) { OnPlayerDestroyed(); return; }
             _playerFleeing = false;
-            if (EncounterSystem.IsPolice(G.EncounterType))
-                G.PoliceRecordScore += FleeFromInspection;
             RefreshStatus();
         }
 
@@ -236,11 +238,36 @@ namespace SpaceTrader.UI.Screens
             var G = GameState.Instance;
             if (EncounterSystem.IsPirate(G.EncounterType))
             {
-                // Pirates strip the player's most valuable cargo
-                for (int i = MaxTradeItem - 1; i >= 0; i--)
-                    G.Ship.Cargo[i] = 0;
+                // Pirates take all cargo when they have enough space (original behavior).
+                // BuyingPrice must also be zeroed — it tracks purchase price per item.
+                for (int i = 0; i < MaxTradeItem; i++)
+                {
+                    G.Ship.Cargo[i]     = 0;
+                    G.BuyingPrice[i]    = 0;
+                }
                 G.PoliceRecordScore += PlunderPirateScore;
                 ShowResult("Pirates took your cargo.", () => ReturnToTravel());
+            }
+            else if (EncounterSystem.IsPolice(G.EncounterType))
+            {
+                // Yielding to attacking police triggers the same confiscation as submitting
+                // to an inspection — the player surrenders and the police board the ship.
+                G.Inspected = true;
+                bool hasCont = G.Ship.Cargo[Narcotics] > 0 || G.Ship.Cargo[Firearms] > 0;
+                if (hasCont)
+                {
+                    if (G.Ship.Cargo[Narcotics] > 0) G.PoliceRecordScore += Trafficking;
+                    if (G.Ship.Cargo[Firearms]  > 0) G.PoliceRecordScore += Trafficking;
+                    G.Ship.Cargo[Narcotics]  = 0;
+                    G.BuyingPrice[Narcotics] = 0;
+                    G.Ship.Cargo[Firearms]   = 0;
+                    G.BuyingPrice[Firearms]  = 0;
+                    ShowResult("You surrendered. Police confiscated your contraband.", () => ReturnToTravel());
+                }
+                else
+                {
+                    ShowResult("You surrendered. Police found nothing and let you go.", () => ReturnToTravel());
+                }
             }
             else
             {
@@ -264,10 +291,13 @@ namespace SpaceTrader.UI.Screens
             G.Inspected = true;
             if (hasCont)
             {
-                G.PoliceRecordScore += Trafficking * G.Ship.Cargo[Narcotics] + Trafficking * G.Ship.Cargo[Firearms];
+                if (G.Ship.Cargo[Narcotics] > 0) G.PoliceRecordScore += Trafficking;
+                if (G.Ship.Cargo[Firearms]  > 0) G.PoliceRecordScore += Trafficking;
                 // Confiscate contraband
-                G.Ship.Cargo[Narcotics] = 0;
-                G.Ship.Cargo[Firearms]  = 0;
+                G.Ship.Cargo[Narcotics]    = 0;
+                G.BuyingPrice[Narcotics]   = 0;
+                G.Ship.Cargo[Firearms]     = 0;
+                G.BuyingPrice[Firearms]    = 0;
                 ShowResult("Police confiscated contraband. Your record suffers.", () => ReturnToTravel());
             }
             else
@@ -356,11 +386,28 @@ namespace SpaceTrader.UI.Screens
             G.Credits   += bounty;
             G.ReputationScore++;
 
-            if (EncounterSystem.IsPolice(enc))   G.PoliceRecordScore += KillPoliceScore;
-            if (EncounterSystem.IsPirate(enc))   G.PoliceRecordScore += KillPirateScore;
-            if (EncounterSystem.IsTrader(enc))   G.PoliceRecordScore += KillTraderScore;
+            if (EncounterSystem.IsPolice(enc))  { G.PoliceRecordScore += KillPoliceScore; G.PoliceKills++; }
+            if (EncounterSystem.IsPirate(enc))  { G.PoliceRecordScore += KillPirateScore; G.PirateKills++; }
+            if (EncounterSystem.IsTrader(enc))  { G.PoliceRecordScore += KillTraderScore; G.TraderKills++; }
 
-            ShowResult($"You destroyed the {GameData.Shiptypes[G.Opponent.Type].Name}!\nBounty: {UIFactory.Cr(bounty)}",
+            string extraMsg = "";
+            if (EncounterSystem.IsSpaceMonster(enc))
+            {
+                G.MonsterStatus = 2;
+                extraMsg = "\nThe Acamar system is safe!";
+            }
+            else if (EncounterSystem.IsDragonfly(enc))
+            {
+                G.DragonflyStatus = 5;
+                extraMsg = "\nCheck Zalkon for your reward.";
+            }
+            else if (EncounterSystem.IsScarab(enc))
+            {
+                G.ScarabStatus = 2;
+                extraMsg = "\nA hull upgrade awaits you somewhere.";
+            }
+
+            ShowResult($"You destroyed the {GameData.Shiptypes[G.Opponent.Type].Name}!\nBounty: {UIFactory.Cr(bounty)}{extraMsg}",
                 () => ReturnToTravel());
         }
 

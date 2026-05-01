@@ -120,7 +120,7 @@ namespace SpaceTrader.UI.Screens
                 long sp   = G.SellPrice[i];
                 bool hasCargo = held > 0;
 
-                d.Name.color = hasCargo ? ColorTheme.TextPrimary : ColorTheme.TextDisabled;
+                d.Name.color = ColorTheme.TextPrimary;
                 d.Held.text  = held.ToString();
 
                 if (hasCargo && sp > 0)

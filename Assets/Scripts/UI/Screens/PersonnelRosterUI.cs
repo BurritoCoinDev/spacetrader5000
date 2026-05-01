@@ -28,7 +28,6 @@ namespace SpaceTrader.UI.Screens
                 ColorTheme.FontBody, ColorTheme.TextPositive, TextAlignmentOptions.Left);
             UIFactory.Stretch(_creditsText.rectTransform, 12, 12, 4, 4);
 
-            // Column headers
             var colHdr = UIFactory.Panel(panel.transform, "ColHdr", ColorTheme.HeaderBg);
             UIFactory.SetAnchored(colHdr.GetComponent<RectTransform>(),
                 new Vector2(0, 0.84f), new Vector2(1, 0.88f), Vector2.zero, Vector2.zero);
@@ -71,14 +70,13 @@ namespace SpaceTrader.UI.Screens
 
             bool crewFull = crewUsed >= st.CrewQuarters - 1;
 
-            // Current crew (excluding commander at slot 0)
             for (int i = 1; i < MaxCrew; i++)
             {
                 if (G.Ship.Crew[i] < 0) continue;
                 int slotIdx = i;
                 int mercIdx = G.Ship.Crew[i];
                 var merc    = G.Mercenary[mercIdx];
-                long daily  = merc.Pilot + merc.Fighter + merc.Trader + merc.Engineer;
+                long daily  = (merc.Pilot + merc.Fighter + merc.Trader + merc.Engineer) * 3;
                 AddMercRow(merc, mercIdx, daily, true, () => {
                     G.Ship.Crew[slotIdx] = -1;
                     BuildAndRefresh();
@@ -86,7 +84,7 @@ namespace SpaceTrader.UI.Screens
             }
 
             // Available crew at current system
-            for (int m = 1; m <= MaxCrewMember && m < GameData.MercenaryNames.Length; m++)
+            for (int m = 1; m < MaxCrewMember && m < GameData.MercenaryNames.Length; m++)
             {
                 bool onCrew = false;
                 for (int s = 0; s < MaxCrew; s++)
@@ -97,7 +95,7 @@ namespace SpaceTrader.UI.Screens
 
                 int mercIdx = m;
                 var merc    = G.Mercenary[m];
-                long daily  = merc.Pilot + merc.Fighter + merc.Trader + merc.Engineer;
+                long daily  = (merc.Pilot + merc.Fighter + merc.Trader + merc.Engineer) * 3;
                 AddMercRow(merc, mercIdx, daily, false, () => {
                     if (crewFull) return;
                     for (int s = 1; s < MaxCrew; s++)

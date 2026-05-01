@@ -4,6 +4,7 @@
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
+using SpaceTrader;
 using static SpaceTrader.GameConstants;
 
 namespace SpaceTrader.UI.Screens
@@ -20,7 +21,6 @@ namespace SpaceTrader.UI.Screens
             UIFactory.Header(panel.transform, "SHIPYARD",
                 () => UIManager.Instance.NavigateBack());
 
-            // Credits strip
             var strip = UIFactory.Panel(panel.transform, "Strip", ColorTheme.RowBg);
             UIFactory.SetAnchored(strip.GetComponent<RectTransform>(),
                 new Vector2(0, 0.88f), new Vector2(1, 0.935f), Vector2.zero, Vector2.zero);
@@ -33,17 +33,14 @@ namespace SpaceTrader.UI.Screens
                 ColorTheme.FontBody, ColorTheme.TextSecondary, TextAlignmentOptions.Right);
             UIFactory.Stretch(_shipText.rectTransform, 12, 12, 4, 4);
 
-            // Fuel section
             BuildSection(panel.transform, "FUEL",
                 new Vector2(0, 0.72f), new Vector2(1, 0.87f),
                 BuildFuelContent);
 
-            // Repair section
             BuildSection(panel.transform, "REPAIRS",
                 new Vector2(0, 0.54f), new Vector2(1, 0.71f),
                 BuildRepairContent);
 
-            // Buy ship section
             BuildSection(panel.transform, "BUY NEW SHIP",
                 new Vector2(0, 0.02f), new Vector2(1, 0.53f),
                 BuildShipContent);
@@ -174,6 +171,7 @@ namespace SpaceTrader.UI.Screens
             long tradein = ShipPriceSystem.CurrentShipPriceWithoutCargo(true);
             long net     = st.Price - tradein;
 
+            if (G.CurrentSystem.TechLevel < st.MinTechLevel) return;
             if (G.Credits < net) return;
             G.Credits -= net;
             ShipyardSystem.CreateShip(shipIdx);

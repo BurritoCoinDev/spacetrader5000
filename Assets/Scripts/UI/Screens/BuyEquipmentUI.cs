@@ -33,7 +33,6 @@ namespace SpaceTrader.UI.Screens
                 ColorTheme.FontBody, ColorTheme.TextSecondary, TextAlignmentOptions.Right);
             UIFactory.Stretch(_shipText.rectTransform, 12, 12, 4, 4);
 
-            // Column headers
             var colHdr = UIFactory.Panel(panel.transform, "ColHdr", ColorTheme.HeaderBg);
             UIFactory.SetAnchored(colHdr.GetComponent<RectTransform>(),
                 new Vector2(0, 0.84f), new Vector2(1, 0.88f), Vector2.zero, Vector2.zero);
@@ -148,7 +147,7 @@ namespace SpaceTrader.UI.Screens
                 bool techOK     = G.CurrentSystem.TechLevel >= tl;
                 bool canAfford  = G.Credits >= price;
                 btn.interactable = hasSlot && techOK && canAfford;
-                lbl.color = (techOK && hasSlot) ? ColorTheme.TextPrimary : ColorTheme.TextDisabled;
+                lbl.color = ColorTheme.TextPrimary;
             }
         }
 

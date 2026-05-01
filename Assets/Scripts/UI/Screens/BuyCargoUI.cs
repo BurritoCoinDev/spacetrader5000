@@ -20,7 +20,7 @@ namespace SpaceTrader.UI.Screens
             public TextMeshProUGUI Name, Price, Avail, Held;
             public Button DecBtn, IncBtn;
             public TextMeshProUGUI QtyLabel;
-            public int[] PendingQty; // single-element array for ref capture
+            public int[] PendingQty;
         }
 
         public void Initialize(GameObject panel)
@@ -29,7 +29,6 @@ namespace SpaceTrader.UI.Screens
             UIFactory.Header(panel.transform, "BUY CARGO",
                 () => UIManager.Instance.NavigateBack());
 
-            // Summary strip
             var strip = UIFactory.Panel(panel.transform, "Strip", ColorTheme.RowBg);
             UIFactory.SetAnchored(strip.GetComponent<RectTransform>(),
                 new Vector2(0, 0.88f), new Vector2(1, 0.935f), Vector2.zero, Vector2.zero);
@@ -42,19 +41,16 @@ namespace SpaceTrader.UI.Screens
                 ColorTheme.FontBody, ColorTheme.TextSecondary, TextAlignmentOptions.Right);
             UIFactory.Stretch(_baysText.rectTransform, 12, 12, 4, 4);
 
-            // Column headers
             var colHdr = UIFactory.Panel(panel.transform, "ColHdr", ColorTheme.HeaderBg);
             UIFactory.SetAnchored(colHdr.GetComponent<RectTransform>(),
                 new Vector2(0, 0.84f), new Vector2(1, 0.88f), Vector2.zero, Vector2.zero);
             BuildColumnHeaders(colHdr.transform);
 
-            // Scroll list
             var (scroll, content) = UIFactory.ScrollView(panel.transform, "CargoList");
             UIFactory.SetAnchored(scroll.GetComponent<RectTransform>(),
                 new Vector2(0, 0.10f), new Vector2(1, 0.84f), Vector2.zero, Vector2.zero);
             _listContent = content;
 
-            // Buy All / Clear buttons
             var btnRow = UIFactory.TransparentPanel(panel.transform, "BtnRow");
             UIFactory.SetAnchored(btnRow.GetComponent<RectTransform>(),
                 new Vector2(0.02f, 0.02f), new Vector2(0.98f, 0.10f), Vector2.zero, Vector2.zero);
@@ -169,7 +165,7 @@ namespace SpaceTrader.UI.Screens
                 w.QtyLabel.text = "0";
                 w.DecBtn.interactable = canBuy;
                 w.IncBtn.interactable = canBuy;
-                w.Name.color = canBuy ? ColorTheme.TextPrimary : ColorTheme.TextDisabled;
+                w.Name.color = ColorTheme.TextPrimary;
             }
         }
 
@@ -185,8 +181,18 @@ namespace SpaceTrader.UI.Screens
             w.QtyLabel.text = newQty.ToString();
 
             int diff = newQty - cur;
-            if (diff > 0)      CargoSystem.BuyCargo(idx, diff);
-            else if (diff < 0) CargoSystem.SellCargo(idx, -diff, GameConstants.SellCargo);
+            if (diff > 0)
+            {
+                CargoSystem.BuyCargo(idx, diff);
+            }
+            else if (diff < 0)
+            {
+                // Undo a pending purchase: refund the buy price, not the sell price.
+                int amount = -diff;
+                G.Credits            += G.BuyPrice[idx] * amount;
+                G.Ship.Cargo[idx]    -= amount;
+                G.CurrentSystem.Qty[idx] += amount;
+            }
 
             _creditsText.text = UIFactory.Cr(G.Credits);
             _baysText.text    = $"Bays: {CargoSystem.FreeCargoBays()}/{CargoSystem.TotalCargoBays()}";
@@ -206,12 +212,16 @@ namespace SpaceTrader.UI.Screens
 
         void OnClear()
         {
+            var G = GameState.Instance;
             for (int i = 0; i < MaxTradeItem; i++)
             {
-                if (_rows[i].PendingQty[0] > 0)
+                int qty = _rows[i].PendingQty[0];
+                if (qty > 0)
                 {
-                    CargoSystem.SellCargo(i, _rows[i].PendingQty[0], GameConstants.SellCargo);
-                    _rows[i].PendingQty[0] = 0;
+                    G.Credits              += G.BuyPrice[i] * qty;
+                    G.Ship.Cargo[i]        -= qty;
+                    G.CurrentSystem.Qty[i] += qty;
+                    _rows[i].PendingQty[0]  = 0;
                 }
             }
             Refresh();

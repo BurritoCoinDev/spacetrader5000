@@ -12,8 +12,6 @@ namespace SpaceTrader
     {
         static GameState G => GameState.Instance;
 
-        // ── Score / High Score ────────────────────────────────────────────────
-
         public static long GetScore(int endStatus, int days, long worth, int level)
         {
             long w = worth < 1000000 ? worth : 1000000 + (worth - 1000000) / 10;
@@ -47,8 +45,6 @@ namespace SpaceTrader
             }
         }
 
-        // ── Standard trade-price formula ──────────────────────────────────────
-
         public static long StandardPrice(int good, int size, int tech, int government, int resources)
         {
             var pol  = GameData.PoliticsTypes[government];
@@ -74,8 +70,6 @@ namespace SpaceTrader
             return price;
         }
 
-        // ── Price determination for a system ─────────────────────────────────
-
         public static void DeterminePrices(int systemID)
         {
             var sys = G.SolarSystem[systemID];
@@ -97,8 +91,6 @@ namespace SpaceTrader
             }
             SkillSystem.RecalculateBuyPrices(systemID);
         }
-
-        // ── Trade-item quantities for a system ───────────────────────────────
 
         public static void InitializeTradeitems(int index)
         {
@@ -134,8 +126,6 @@ namespace SpaceTrader
             }
         }
 
-        // ── Galaxy / system generation ────────────────────────────────────────
-
         public static void ShuffleStatus()
         {
             for (int i = 0; i < MaxSolarSystem; i++)
@@ -168,8 +158,6 @@ namespace SpaceTrader
             }
         }
 
-        // ── Wormhole check ────────────────────────────────────────────────────
-
         public static bool WormholeExists(int from, int to)
         {
             for (int i = 0; i < MaxWormhole; i++)
@@ -182,16 +170,12 @@ namespace SpaceTrader
         public static long WormholeTax(int from, int to)
             => WormholeExists(from, to) ? GameData.Shiptypes[G.Ship.Type].CostOfFuel * 25L : 0L;
 
-        // ── Cloaking check ────────────────────────────────────────────────────
-
         public static bool Cloaked(Ship sh, Ship opp)
         {
             if (!SkillSystem.HasGadget(sh, CloakingDevice)) return false;
             return SkillSystem.PilotSkill(sh) + GetRandom(MaxSkill) >
                    SkillSystem.EngineerSkill(opp) + GetRandom(MaxSkill);
         }
-
-        // ── Nearest-system navigation ─────────────────────────────────────────
 
         public static int NextSystemWithinRange(int current, bool back)
         {
@@ -204,36 +188,30 @@ namespace SpaceTrader
 
                 if (WormholeExists(G.Commander.CurSystem, i)) return i;
                 long dist = RealDistance(G.SolarSystem[G.Commander.CurSystem], G.SolarSystem[i]);
-                if (dist <= FuelSystem.GetFuel() && dist > 0) return i;
+                if (dist <= FuelSystem.GetFuelTanks() && dist > 0) return i;
 
                 if (back) i--; else i++;
             }
             return -1;
         }
 
-        // ── Daily advancement ─────────────────────────────────────────────────
-
         public static void IncDays(int amount)
         {
             G.Days += amount;
 
-            // Reactor shrinks fuel bays over time
             if (G.ReactorStatus > 0 && G.ReactorStatus < 21)
             {
                 G.ReactorStatus += amount;
                 if (G.ReactorStatus > 20)
                 {
-                    // Reactor melts down
                     EncounterSystem.EscapeWithPod();
                     return;
                 }
             }
 
-            // Invasion countdown
             if (G.InvasionStatus > 0 && G.InvasionStatus < 8)
                 G.InvasionStatus += amount;
 
-            // Experiment countdown
             if (G.ExperimentStatus > 0 && G.ExperimentStatus < 12)
             {
                 G.ExperimentStatus += amount;
@@ -248,8 +226,6 @@ namespace SpaceTrader
 
             ChangeQuantities();
         }
-
-        // ── Arrival at a system ───────────────────────────────────────────────
 
         public static void Arrival()
         {
@@ -268,14 +244,12 @@ namespace SpaceTrader
             if (G.AutoRepair)
                 ShipyardSystem.BuyRepairs((int)(ShipyardSystem.GetHullStrength() - G.Ship.Hull));
 
-            // Tribbles multiply
             if (G.Ship.Tribbles > 0 && G.ReactorStatus == 0)
             {
                 G.Ship.Tribbles += 1 + GetRandom((int)(G.Ship.Tribbles > 100 ? G.Ship.Tribbles / 100 : 1));
                 if (G.Ship.Tribbles > MaxTribbles) G.Ship.Tribbles = MaxTribbles;
             }
 
-            // Reactor eats food/narcotics
             if (G.ReactorStatus > 0)
             {
                 for (int i = 0; i < 3; i++)
@@ -283,15 +257,11 @@ namespace SpaceTrader
                     else if (G.Ship.Cargo[Food] > 0) G.Ship.Cargo[Food]--;
             }
 
-            // Reset trip flags
             G.Raided     = false;
             G.Inspected  = false;
             G.AlreadyPaidForNewspaper = false;
         }
 
-        // ── Warp execution ────────────────────────────────────────────────────
-
-        // Returns a WarpResult describing why the warp was blocked, or null on success.
         public enum WarpResult
         {
             Success,
@@ -324,10 +294,9 @@ namespace SpaceTrader
                 G.Credits -= wormTax + merMon + insMon;
             }
 
-            // Restore shields before warp
             for (int i = 0; i < MaxShield; i++)
             {
-                if (G.Ship.Shield[i] < 0) break;
+                if (G.Ship.Shield[i] < 0) continue;
                 G.Ship.ShieldStrength[i] = GameData.Shieldtypes[G.Ship.Shield[i]].Power;
             }
 
@@ -351,7 +320,10 @@ namespace SpaceTrader
                 if (G.Insurance) G.NoClaim++;
             }
 
-            G.Clicks         = (int)RealDistance(G.SolarSystem[G.Commander.CurSystem], G.SolarSystem[G.WarpSystem]);
+            bool isWormholeTrip = WormholeExists(curSys, G.WarpSystem) || viaSingularity;
+            G.Clicks = isWormholeTrip
+                ? WormholeDistance
+                : (int)RealDistance(G.SolarSystem[G.Commander.CurSystem], G.SolarSystem[G.WarpSystem]);
             G.Raided         = false;
             G.Inspected      = false;
             G.LitterWarning  = false;
@@ -372,18 +344,10 @@ namespace SpaceTrader
             return WarpResult.Success;
         }
 
-        // ── In-flight travel (encounter loop entry point) ─────────────────────
-        // In the original this drives click-by-click encounters from a form.
-        // Here we advance the state machine one click; the UI layer calls this
-        // repeatedly until Clicks reaches 0 or an encounter begins.
-
         public static bool Travel()
         {
-            // G.Clicks was already set in DoWarp(); TravelUI drives the loop.
             return true;
         }
-
-        // ── New game setup ────────────────────────────────────────────────────
 
         public static bool StartNewGame()
         {
@@ -396,13 +360,8 @@ namespace SpaceTrader
             cmdr.Trader   = 0;
             cmdr.Engineer = 0;
 
-            // Place wormholes
             PlaceWormholes();
-
-            // Generate galaxy
             GenerateGalaxy();
-
-            // Set up special events
             PlaceSpecialEvents();
 
             G.WarpSystem = SolSystem;
@@ -427,7 +386,6 @@ namespace SpaceTrader
                 sys.Visited          = false;
                 sys.Special          = -1;
 
-                // Ensure minimum distance between systems
                 bool placed = false;
                 int tries   = 0;
                 while (!placed && tries < 100)
@@ -445,6 +403,16 @@ namespace SpaceTrader
 
                 InitializeTradeitems(i);
             }
+
+            // Sol is always Hi-tech Democratic to match the original Palm OS game.
+            // Without this, Sol's TechLevel is random and most goods may be unavailable
+            // at game start, making the BuyCargo screen look empty.
+            var sol = G.SolarSystem[SolSystem];
+            sol.TechLevel        = MaxTechLevel - 1; // Hi-tech
+            sol.Politics         = 6;                // Democracy
+            sol.Size             = 3;                // Large
+            sol.SpecialResources = NoSpecialResources;
+            InitializeTradeitems(SolSystem);
         }
 
         static void PlaceWormholes()
@@ -452,7 +420,6 @@ namespace SpaceTrader
             G.Wormhole = new int[MaxWormhole];
             for (int i = 0; i < MaxWormhole; i++) G.Wormhole[i] = -1;
 
-            // Assign wormhole pairs randomly
             bool[] used = new bool[MaxSolarSystem];
             for (int i = 0; i < MaxWormhole && i < MaxSolarSystem; i++)
             {
@@ -465,16 +432,14 @@ namespace SpaceTrader
 
         static void PlaceSpecialEvents()
         {
-            // Assign the fixed special events to their canonical systems
-            G.SolarSystem[AcamarSystem].Special   = DragonflyDestroyed;
+            G.SolarSystem[ZalkonSystem].Special    = DragonflyDestroyed; // Dragonfly was heading to Zalkon
             G.SolarSystem[BaratasSystem].Special   = FlyBaratas;
             G.SolarSystem[MelinaSystem].Special    = FlyMelina;
             G.SolarSystem[RegulasSystem].Special   = FlyRegulas;
-            G.SolarSystem[AcamarSystem].Special    = MonsterKilled;
+            G.SolarSystem[AcamarSystem].Special    = MonsterKilled;      // Monster originated at Acamar
             G.SolarSystem[JaporiSystem].Special    = MedicineDelivery;
             G.SolarSystem[UtopiaSystem].Special    = MoonBoughtEvent;
 
-            // Place random special events (indices >= EndFixed)
             for (int i = EndFixed; i < MaxSpecialEvent; i++)
             {
                 int tries = 0;
@@ -487,8 +452,6 @@ namespace SpaceTrader
                 }
             }
         }
-
-        // ── Any empty equipment slots? ────────────────────────────────────────
 
         public static bool AnyEmptySlots(Ship ship)
         {
