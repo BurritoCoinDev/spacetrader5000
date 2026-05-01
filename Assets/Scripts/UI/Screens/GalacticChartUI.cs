@@ -4,6 +4,7 @@
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
+using SpaceTrader;
 using static SpaceTrader.GameConstants;
 
 namespace SpaceTrader.UI.Screens
@@ -120,7 +121,7 @@ namespace SpaceTrader.UI.Screens
 
             string name = GameData.SolarSystemNames[sys.NameIndex];
             float dist  = (float)GameMath.RealDistance(G.SolarSystem[cur], sys);
-            bool inRange = dist <= FuelSystem.GetFuelTanks();
+            bool inRange = dist <= G.Ship.Fuel || TravelerSystem.WormholeExists(cur, _selectedSystem);
             bool isHere  = _selectedSystem == cur;
 
             string info = visited

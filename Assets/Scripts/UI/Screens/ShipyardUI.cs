@@ -171,10 +171,10 @@ namespace SpaceTrader.UI.Screens
             long tradein = ShipPriceSystem.CurrentShipPriceWithoutCargo(true);
             long net     = st.Price - tradein;
 
+            if (G.CurrentSystem.TechLevel < st.MinTechLevel) return;
             if (G.Credits < net) return;
             G.Credits -= net;
             ShipyardSystem.CreateShip(shipIdx);
-            G.HullUpgraded = false;
             Refresh();
         }
     }

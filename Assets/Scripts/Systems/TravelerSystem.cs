@@ -320,7 +320,10 @@ namespace SpaceTrader
                 if (G.Insurance) G.NoClaim++;
             }
 
-            G.Clicks         = (int)RealDistance(G.SolarSystem[G.Commander.CurSystem], G.SolarSystem[G.WarpSystem]);
+            bool isWormholeTrip = WormholeExists(curSys, G.WarpSystem) || viaSingularity;
+            G.Clicks = isWormholeTrip
+                ? WormholeDistance
+                : (int)RealDistance(G.SolarSystem[G.Commander.CurSystem], G.SolarSystem[G.WarpSystem]);
             G.Raided         = false;
             G.Inspected      = false;
             G.LitterWarning  = false;

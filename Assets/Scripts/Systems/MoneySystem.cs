@@ -20,7 +20,7 @@ namespace SpaceTrader
             for (int i = 1; i < MaxCrew; i++)
             {
                 int idx = ship.Crew[i];
-                if (idx < 0) break;
+                if (idx < 0) continue;
                 var m = G.Mercenary[idx];
                 total += (m.Pilot + m.Fighter + m.Trader + m.Engineer) * 3;
             }

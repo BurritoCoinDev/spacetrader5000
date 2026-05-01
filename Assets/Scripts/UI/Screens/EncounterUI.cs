@@ -271,8 +271,10 @@ namespace SpaceTrader.UI.Screens
                 if (G.Ship.Cargo[Narcotics] > 0) G.PoliceRecordScore += Trafficking;
                 if (G.Ship.Cargo[Firearms]  > 0) G.PoliceRecordScore += Trafficking;
                 // Confiscate contraband
-                G.Ship.Cargo[Narcotics] = 0;
-                G.Ship.Cargo[Firearms]  = 0;
+                G.Ship.Cargo[Narcotics]    = 0;
+                G.BuyingPrice[Narcotics]   = 0;
+                G.Ship.Cargo[Firearms]     = 0;
+                G.BuyingPrice[Firearms]    = 0;
                 ShowResult("Police confiscated contraband. Your record suffers.", () => ReturnToTravel());
             }
             else

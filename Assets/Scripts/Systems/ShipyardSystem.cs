@@ -156,6 +156,7 @@ namespace SpaceTrader
             }
 
             G.Ship = newShip;
+            G.HullUpgraded = false;
         }
     }
 }
