@@ -75,7 +75,7 @@ namespace SpaceTrader
 
         public static int RandomSkill() => 1 + GetRandom(5) + GetRandom(6);
 
-        // ── Equipment queries ─────────────────────────────────────────────────
+        // ── Equipment queries ──────────────────────────────────────────────────
 
         public static bool HasGadget(Ship sh, int gadget)
         {
@@ -103,21 +103,23 @@ namespace SpaceTrader
         }
 
         // Returns the slot index of the nth-lowest skill on the commander's crew.
+        // Constants must be qualified: PilotSkill etc. otherwise resolve to the
+        // method groups defined above (compile error CS0428).
         public static int NthLowestSkill(Ship sh, int n)
         {
             var cmdr = G.Mercenary[sh.Crew[0]];
             int lower = 1;
             for (int i = 0; i <= MaxSkill; i++)
             {
-                if (cmdr.Pilot == i) { if (lower++ == n) return PilotSkill; }
-                if (cmdr.Fighter == i) { if (lower++ == n) return FighterSkill; }
-                if (cmdr.Trader == i) { if (lower++ == n) return TraderSkill; }
-                if (cmdr.Engineer == i) { if (lower++ == n) return EngineerSkill; }
+                if (cmdr.Pilot    == i) { if (lower++ == n) return GameConstants.PilotSkill; }
+                if (cmdr.Fighter  == i) { if (lower++ == n) return GameConstants.FighterSkill; }
+                if (cmdr.Trader   == i) { if (lower++ == n) return GameConstants.TraderSkill; }
+                if (cmdr.Engineer == i) { if (lower++ == n) return GameConstants.EngineerSkill; }
             }
-            return PilotSkill;
+            return GameConstants.PilotSkill;
         }
 
-        // ── Skill mutation ────────────────────────────────────────────────────
+        // ── Skill mutation ─────────────────────────────────────────────────────
 
         public static void IncreaseRandomSkill()
         {
@@ -189,7 +191,7 @@ namespace SpaceTrader
             }
         }
 
-        // ── Price recalculation ───────────────────────────────────────────────
+        // ── Price recalculation ─────────────────────────────────────────────────
 
         public static void RecalculateBuyPrices(int systemID)
         {
