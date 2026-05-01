@@ -182,6 +182,14 @@ namespace SpaceTrader
             ArrivedViaWormhole  = false;
             PossibleToGoThroughRip = false;
 
+            // Runtime flags that could leak between games
+            EncounterType       = 0;
+            JustLootedMarie     = false;
+            CanSuperWarp        = false;
+            CheatCounter        = 0;
+            NewsSpecialEventCount = 0;
+            for (int i = 0; i < MaxTradeItem; i++) BuyingPriceAlt[i] = 0;
+
             for (int i = 0; i < MaxTradeItem; i++)
             {
                 BuyPrice[i]     = 0;

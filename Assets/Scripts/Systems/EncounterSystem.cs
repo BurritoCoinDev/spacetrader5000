@@ -244,7 +244,7 @@ namespace SpaceTrader
             var newShip = new Ship
             {
                 Type = 0,
-                Fuel = 0,
+                Fuel = GameData.Shiptypes[0].FuelTanks,
                 Hull = GameData.Shiptypes[0].HullStrength,
             };
             for (int i = 0; i < MaxWeapon; i++)  newShip.Weapon[i]  = -1;
@@ -299,7 +299,13 @@ namespace SpaceTrader
                 return G.EncounterType = SpaceMonsterAttack;
             }
 
-            if (G.DragonflyStatus >= 1 && G.DragonflyStatus <= 4 && GetRandom(100) < 85)
+            // Dragonfly is pinned to a specific destination per quest stage
+            int dflySys = G.DragonflyStatus == 1 ? BaratasSystem
+                        : G.DragonflyStatus == 2 ? MelinaSystem
+                        : G.DragonflyStatus == 3 ? RegulasSystem
+                        : G.DragonflyStatus == 4 ? ZalkonSystem
+                        : -1;
+            if (dflySys >= 0 && sys == dflySys && GetRandom(100) < 85)
             {
                 G.Opponent = G.Dragonfly_Ship.Clone();
                 return G.EncounterType = DragonflyAttack;

@@ -193,9 +193,14 @@ namespace SpaceTrader.UI.Screens
             string toggleLabel = _showDifference ? "ABSOLUTE PRICES" : "PRICE DIFFERENCES";
             _toggleBtn.GetComponentInChildren<TextMeshProUGUI>().text = toggleLabel;
 
+            // Buying is only meaningful when the displayed system is the
+            // current system — otherwise StandardPrice is just an estimate
+            // and we don't have system stock to deduct from.
+            bool atTarget = (target == cur);
+
             for (int i = 0; i < MaxTradeItem; i++)
             {
-                // Average estimated price at target system
+                // Average estimated price at target system (no random variance)
                 long targetPrice = TravelerSystem.StandardPrice(
                     i, sys.Size, sys.TechLevel, sys.Politics, sys.SpecialResources);
 
@@ -211,8 +216,11 @@ namespace SpaceTrader.UI.Screens
                     continue;
                 }
 
-                _cells[i].Btn.interactable = true;
-                _cells[i].Btn.onClick.AddListener(() => OpenBuyDialog(idx, targetPrice));
+                // Only allow buying at the current system, where G.BuyPrice
+                // is real and CargoSystem.BuyCargo can deduct stock.
+                _cells[i].Btn.interactable = atTarget && G.BuyPrice[i] > 0;
+                if (_cells[i].Btn.interactable)
+                    _cells[i].Btn.onClick.AddListener(() => OpenBuyDialog(idx));
 
                 if (_showDifference)
                 {
@@ -248,20 +256,16 @@ namespace SpaceTrader.UI.Screens
             RefreshPrices();
         }
 
-        void OpenBuyDialog(int itemIdx, long unitPrice)
+        void OpenBuyDialog(int itemIdx)
         {
             var G = GameState.Instance;
             _buyItemIdx   = itemIdx;
-            _buyUnitPrice = unitPrice;
+            _buyUnitPrice = G.BuyPrice[itemIdx]; // skill / record adjusted
 
-            int maxCanAfford = unitPrice > 0 ? (int)(G.Credits / unitPrice) : 0;
-            int maxBySpace   = CargoSystem.FreeCargoBays();
-            int maxBuy       = GameMath.Min(maxCanAfford, maxBySpace);
+            int maxBuy = CargoSystem.GetAmountToBuy(itemIdx);
 
-            string itemName = GameData.Tradeitems[itemIdx].Name;
-            _buyMsg.text = $"At {UIFactory.Cr(unitPrice)} each, you can afford {maxBuy}.\n" +
+            _buyMsg.text = $"At {UIFactory.Cr(_buyUnitPrice)} each, you can afford {maxBuy}.\n" +
                            $"How many do you want to buy?";
-
             _buyInput.text = maxBuy > 0 ? "1" : "0";
             _buyDialog.SetActive(true);
         }
@@ -278,32 +282,14 @@ namespace SpaceTrader.UI.Screens
 
         void OnBuyAll()
         {
-            var G = GameState.Instance;
-            int maxCanAfford = _buyUnitPrice > 0 ? (int)(G.Credits / _buyUnitPrice) : 0;
-            int maxBySpace   = CargoSystem.FreeCargoBays();
-            ExecuteBuy(GameMath.Min(maxCanAfford, maxBySpace));
+            ExecuteBuy(CargoSystem.GetAmountToBuy(_buyItemIdx));
         }
 
         void ExecuteBuy(int qty)
         {
-            if (qty <= 0) { _buyDialog.SetActive(false); return; }
-
-            var G   = GameState.Instance;
-            int space = CargoSystem.FreeCargoBays();
-            qty = GameMath.Min(qty, space);
-
-            long totalCost = qty * _buyUnitPrice;
-            if (totalCost > G.Credits) qty = (int)(G.Credits / _buyUnitPrice);
-            if (qty <= 0) { _buyDialog.SetActive(false); return; }
-
-            totalCost = qty * _buyUnitPrice;
-            G.Credits -= totalCost;
-            G.Ship.Cargo[_buyItemIdx] += qty;
-            // Track average buying price for later profit calculation
-            G.BuyingPrice[_buyItemIdx] =
-                (G.BuyingPrice[_buyItemIdx] * (G.Ship.Cargo[_buyItemIdx] - qty) + totalCost)
-                / G.Ship.Cargo[_buyItemIdx];
-
+            // CargoSystem.BuyCargo handles affordability, free-bay clamping,
+            // running-average BuyingPrice, and system-stock deduction.
+            CargoSystem.BuyCargo(_buyItemIdx, qty);
             _buyDialog.SetActive(false);
             RefreshPrices();
         }

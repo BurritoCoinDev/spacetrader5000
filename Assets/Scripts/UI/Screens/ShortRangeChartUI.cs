@@ -151,12 +151,14 @@ namespace SpaceTrader.UI.Screens
                 Touch t1 = Input.GetTouch(1);
                 float dist = Vector2.Distance(t0.position, t1.position);
 
-                if (t0.phase == TouchPhase.Began || t1.phase == TouchPhase.Began)
+                // Begin or resume pinch: any time we see two fingers and we
+                // weren't already tracking, anchor the gesture here.
+                if (!_isPinching)
                 {
                     _prevPinchDist = dist;
                     _isPinching    = true;
                 }
-                else if (_isPinching && dist > 1f && _prevPinchDist > 1f)
+                else if (dist > 1f && _prevPinchDist > 1f)
                 {
                     _zoom = Mathf.Clamp(_zoom * (_prevPinchDist / dist), MinZoom, MaxZoom);
                     RecalcScale();
@@ -241,13 +243,16 @@ namespace SpaceTrader.UI.Screens
 
         void PlaceRangeCircle()
         {
-            float r = _fuel * _scale;  // pixel radius of fuel range
-            // Offset by pan so circle stays centered on current system
+            // No fuel → no visible ring (avoids 48 dots collapsing to one cluster)
+            bool show = _fuel > 0;
+            float r     = _fuel * _scale;
             float panPx = -_pan.x * _scale;
             float panPy = -_pan.y * _scale;
 
             for (int k = 0; k < CirclePts; k++)
             {
+                _circleRt[k].gameObject.SetActive(show);
+                if (!show) continue;
                 float angle = 2f * Mathf.PI * k / CirclePts;
                 _circleRt[k].anchoredPosition = new Vector2(
                     panPx + r * Mathf.Cos(angle),

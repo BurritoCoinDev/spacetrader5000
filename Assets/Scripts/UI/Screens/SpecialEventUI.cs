@@ -77,7 +77,7 @@ namespace SpaceTrader.UI.Screens
                 case FlyRegulas:            return G.DragonflyStatus == 3;
                 case MonsterKilled:         return G.MonsterStatus == 2;
                 case ScarabDestroyed:       return G.ScarabStatus == 2;
-                case GetHullUpgraded:       return G.ScarabStatus == 2;
+                case GetHullUpgraded:       return G.ScarabStatus == 2 && !G.HullUpgraded;
                 case AmbassadorJarek:       return G.JarekStatus == 0;
                 case JarekGetsOut:          return G.JarekStatus == 2;
                 case TransportWild:         return G.WildStatus == 0;

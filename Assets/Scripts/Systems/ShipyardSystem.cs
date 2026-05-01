@@ -149,14 +149,19 @@ namespace SpaceTrader
             for (int i = 0; i < MaxGadget && gSlot < stype.GadgetSlots; i++)
                 if (G.Ship.Gadget[i] >= 0) newShip.Gadget[gSlot++] = G.Ship.Gadget[i];
 
-            // Transfer cargo up to new bay capacity
+            // Transfer cargo up to new bay capacity; zero BuyingPrice for goods
+            // that didn't make the cut so running averages reset properly.
             int freeBays = stype.CargoBays;
             for (int i = 0; i < MaxTradeItem; i++)
             {
                 int qty = GameMath.Min(G.Ship.Cargo[i], freeBays);
                 newShip.Cargo[i] = qty;
                 freeBays -= qty;
+                if (qty == 0) G.BuyingPrice[i] = 0;
             }
+
+            // Tribbles travel with the commander
+            newShip.Tribbles = G.Ship.Tribbles;
 
             G.Ship = newShip;
             G.HullUpgraded = false;
