@@ -112,6 +112,7 @@ namespace SpaceTrader.UI.Screens
 
         void UpdateSelection()
         {
+            if (_selectedSystem < 0 || _selectedSystem >= MaxSolarSystem) return;
             var G    = GameState.Instance;
             int cur  = G.Commander.CurSystem;
             var sys  = G.SolarSystem[_selectedSystem];

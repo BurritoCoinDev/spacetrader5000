@@ -83,7 +83,7 @@ namespace SpaceTrader.UI.Screens
                 });
             }
 
-            for (int m = 1; m <= MaxCrewMember && m < GameData.MercenaryNames.Length; m++)
+            for (int m = 1; m < MaxCrewMember && m < GameData.MercenaryNames.Length; m++)
             {
                 bool onCrew = false;
                 for (int s = 0; s < MaxCrew; s++)

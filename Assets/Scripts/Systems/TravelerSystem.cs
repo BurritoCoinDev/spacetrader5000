@@ -188,7 +188,7 @@ namespace SpaceTrader
 
                 if (WormholeExists(G.Commander.CurSystem, i)) return i;
                 long dist = RealDistance(G.SolarSystem[G.Commander.CurSystem], G.SolarSystem[i]);
-                if (dist <= FuelSystem.GetFuel() && dist > 0) return i;
+                if (dist <= FuelSystem.GetFuelTanks() && dist > 0) return i;
 
                 if (back) i--; else i++;
             }

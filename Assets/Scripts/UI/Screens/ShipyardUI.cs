@@ -4,6 +4,7 @@
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
+using SpaceTrader;
 using static SpaceTrader.GameConstants;
 
 namespace SpaceTrader.UI.Screens

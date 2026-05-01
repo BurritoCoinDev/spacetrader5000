@@ -142,7 +142,7 @@ namespace SpaceTrader
                 for (int e = 0; e < tries; e++)
                 {
                     long rnd = GetRandom(100); int g = 0; long s = GameData.Gadgettypes[0].Chance;
-                    while (rnd < s && g < MaxGadgetType - 1) { g++; s += GameData.Gadgettypes[g].Chance; }
+                    while (rnd >= s && g < MaxGadgetType - 1) { g++; s += GameData.Gadgettypes[g].Chance; }
                     if (!SkillSystem.HasGadget(opp, g) && g > best) best = g;
                 }
                 opp.Gadget[i] = best;
@@ -156,7 +156,7 @@ namespace SpaceTrader
                 for (int e = 0; e < tries; e++)
                 {
                     long rnd = GetRandom(100); int w = 0; long s = GameData.Weapontypes[0].Chance;
-                    while (rnd < s && w < MaxWeaponType - 1) { w++; s += GameData.Weapontypes[w].Chance; }
+                    while (rnd >= s && w < MaxWeaponType - 1) { w++; s += GameData.Weapontypes[w].Chance; }
                     if (!SkillSystem.HasWeapon(opp, w, true) && w > best) best = w;
                 }
                 opp.Weapon[i] = best;
@@ -170,7 +170,7 @@ namespace SpaceTrader
                 for (int e = 0; e < tries; e++)
                 {
                     long rnd = GetRandom(100); int sh = 0; long s = GameData.Shieldtypes[0].Chance;
-                    while (rnd < s && sh < MaxShieldType - 1) { sh++; s += GameData.Shieldtypes[sh].Chance; }
+                    while (rnd >= s && sh < MaxShieldType - 1) { sh++; s += GameData.Shieldtypes[sh].Chance; }
                     if (!SkillSystem.HasShield(opp, sh) && sh > best) best = sh;
                 }
                 opp.Shield[i]         = best;
@@ -188,11 +188,16 @@ namespace SpaceTrader
 
             opp.Hull = GameData.Shiptypes[opp.Type].HullStrength;
 
-            opp.Crew[0] = 1 + GetRandom(MaxCrewMember - 1);
-            G.Mercenary[opp.Crew[0]].Pilot    = SkillSystem.RandomSkill();
-            G.Mercenary[opp.Crew[0]].Fighter  = SkillSystem.RandomSkill();
-            G.Mercenary[opp.Crew[0]].Trader   = SkillSystem.RandomSkill();
-            G.Mercenary[opp.Crew[0]].Engineer = SkillSystem.RandomSkill();
+            // Pick a crew slot that is not currently in the player's crew to avoid
+            // overwriting hired mercenary stats.
+            int crewIdx;
+            do { crewIdx = 1 + GetRandom(MaxCrewMember - 1); }
+            while (System.Array.IndexOf(G.Ship.Crew, crewIdx) >= 0);
+            opp.Crew[0] = crewIdx;
+            G.Mercenary[crewIdx].Pilot    = SkillSystem.RandomSkill();
+            G.Mercenary[crewIdx].Fighter  = SkillSystem.RandomSkill();
+            G.Mercenary[crewIdx].Trader   = SkillSystem.RandomSkill();
+            G.Mercenary[crewIdx].Engineer = SkillSystem.RandomSkill();
         }
 
         public static bool ExecuteAttack(Ship attacker, Ship defender, bool defenderFlees, bool commanderUnderAttack)

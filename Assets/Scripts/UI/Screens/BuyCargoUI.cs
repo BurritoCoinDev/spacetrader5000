@@ -212,11 +212,15 @@ namespace SpaceTrader.UI.Screens
 
         void OnClear()
         {
+            var G = GameState.Instance;
             for (int i = 0; i < MaxTradeItem; i++)
             {
-                if (_rows[i].PendingQty[0] > 0)
+                int qty = _rows[i].PendingQty[0];
+                if (qty > 0)
                 {
-                    CargoSystem.SellCargo(i, _rows[i].PendingQty[0], GameConstants.SellCargo);
+                    G.Credits            += G.BuyPrice[i] * qty;
+                    G.Ship.Cargo[i]      -= qty;
+                    G.CurrentSystem.Qty[i] += qty;
                     _rows[i].PendingQty[0] = 0;
                 }
             }

@@ -268,7 +268,8 @@ namespace SpaceTrader.UI.Screens
             G.Inspected = true;
             if (hasCont)
             {
-                G.PoliceRecordScore += Trafficking * G.Ship.Cargo[Narcotics] + Trafficking * G.Ship.Cargo[Firearms];
+                if (G.Ship.Cargo[Narcotics] > 0) G.PoliceRecordScore += Trafficking;
+                if (G.Ship.Cargo[Firearms]  > 0) G.PoliceRecordScore += Trafficking;
                 // Confiscate contraband
                 G.Ship.Cargo[Narcotics] = 0;
                 G.Ship.Cargo[Firearms]  = 0;

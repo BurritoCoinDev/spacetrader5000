@@ -27,7 +27,10 @@ namespace SpaceTrader.Persistence
         public string NameCommander;
         public bool   EscapePod; public bool Insurance; public int NoClaim;
         public bool   AlwaysIgnoreTraders; public bool AlwaysIgnorePolice;
-        public bool   AlwaysIgnorePirates;
+        public bool   AlwaysIgnorePirates; public bool AlwaysIgnoreTradeInOrbit;
+        public bool   NewsAutoPay; public bool ShowTrackedRange;
+        public bool   TrackAutoOff; public bool RemindLoans;
+        public bool   HullUpgraded;
         public int[]  Wormhole = new int[MaxWormhole];
         public bool   ArtifactOnBoard; public bool ReserveMoney;
         public bool   PriceDifferences; public int LeaveEmpty;
@@ -104,9 +107,15 @@ namespace SpaceTrader.Persistence
                 JaporiDiseaseStatus = G.JaporiDiseaseStatus, MoonBought = G.MoonBought,
                 MonsterHull = G.MonsterHull, NameCommander = G.NameCommander,
                 EscapePod = G.EscapePod, Insurance = G.Insurance, NoClaim = G.NoClaim,
-                AlwaysIgnoreTraders = G.AlwaysIgnoreTraders,
-                AlwaysIgnorePolice  = G.AlwaysIgnorePolice,
-                AlwaysIgnorePirates = G.AlwaysIgnorePirates,
+                AlwaysIgnoreTraders     = G.AlwaysIgnoreTraders,
+                AlwaysIgnorePolice      = G.AlwaysIgnorePolice,
+                AlwaysIgnorePirates     = G.AlwaysIgnorePirates,
+                AlwaysIgnoreTradeInOrbit = G.AlwaysIgnoreTradeInOrbit,
+                NewsAutoPay             = G.NewsAutoPay,
+                ShowTrackedRange        = G.ShowTrackedRange,
+                TrackAutoOff            = G.TrackAutoOff,
+                RemindLoans             = G.RemindLoans,
+                HullUpgraded            = G.HullUpgraded,
                 ArtifactOnBoard = G.ArtifactOnBoard, ReserveMoney = G.ReserveMoney,
                 PriceDifferences = G.PriceDifferences, LeaveEmpty = G.LeaveEmpty,
                 AlwaysInfo = G.AlwaysInfo, TextualEncounters = G.TextualEncounters,
@@ -191,9 +200,16 @@ namespace SpaceTrader.Persistence
                 G.MoonBought = sd.MoonBought; G.MonsterHull = sd.MonsterHull;
                 G.NameCommander = sd.NameCommander;
                 G.EscapePod = sd.EscapePod; G.Insurance = sd.Insurance; G.NoClaim = sd.NoClaim;
-                G.AlwaysIgnoreTraders = sd.AlwaysIgnoreTraders;
-                G.AlwaysIgnorePolice  = sd.AlwaysIgnorePolice;
-                G.AlwaysIgnorePirates = sd.AlwaysIgnorePirates;
+                G.AlwaysIgnoreTraders     = sd.AlwaysIgnoreTraders;
+                G.AlwaysIgnorePolice      = sd.AlwaysIgnorePolice;
+                G.AlwaysIgnorePirates     = sd.AlwaysIgnorePirates;
+                G.AlwaysIgnoreTradeInOrbit = sd.AlwaysIgnoreTradeInOrbit;
+                G.NewsAutoPay             = sd.NewsAutoPay;
+                G.ShowTrackedRange        = sd.ShowTrackedRange;
+                G.TrackAutoOff            = sd.TrackAutoOff;
+                G.RemindLoans             = sd.RemindLoans;
+                G.HullUpgraded            = sd.HullUpgraded;
+                G.SpaceMonster.Hull       = sd.MonsterHull;
                 G.ArtifactOnBoard = sd.ArtifactOnBoard; G.ReserveMoney = sd.ReserveMoney;
                 G.PriceDifferences = sd.PriceDifferences; G.LeaveEmpty = sd.LeaveEmpty;
                 G.AlwaysInfo = sd.AlwaysInfo; G.TextualEncounters = sd.TextualEncounters;

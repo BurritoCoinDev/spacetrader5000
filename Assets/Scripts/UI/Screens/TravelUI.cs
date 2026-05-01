@@ -91,8 +91,8 @@ namespace SpaceTrader.UI.Screens
 
         void Update()
         {
-            if (!_waitingForInput && GameState.Instance.Clicks > 0
-                && gameObject.activeInHierarchy)
+            if (GameState.Instance == null || !gameObject.activeInHierarchy) return;
+            if (!_waitingForInput && GameState.Instance.Clicks > 0)
             {
                 // Auto-advance after a short pause (simulate travel time)
                 _autoTimer += Time.deltaTime;
