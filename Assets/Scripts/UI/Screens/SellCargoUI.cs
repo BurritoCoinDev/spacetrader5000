@@ -71,9 +71,8 @@ namespace SpaceTrader.UI.Screens
             for (int i = 0; i < MaxTradeItem; i++)
             {
                 int idx = i;
-                var row = UIFactory.Panel(_listContent, $"Row{i}",
-                    i % 2 == 0 ? ColorTheme.RowBg : ColorTheme.RowAlt);
-                row.GetComponent<UnityEngine.RectTransform>().sizeDelta = new Vector2(0, 80);
+                var row = UIFactory.RowPanel(_listContent, $"Row{i}",
+                    i % 2 == 0 ? ColorTheme.RowBg : ColorTheme.RowAlt, 80);
 
                 var d = new RowData { Index = i };
 
@@ -121,7 +120,7 @@ namespace SpaceTrader.UI.Screens
                 long sp   = G.SellPrice[i];
                 bool hasCargo = held > 0;
 
-                d.Name.color = hasCargo ? ColorTheme.TextPrimary : ColorTheme.TextDisabled;
+                d.Name.color = ColorTheme.TextPrimary;
                 d.Held.text  = held.ToString();
 
                 if (hasCargo && sp > 0)
