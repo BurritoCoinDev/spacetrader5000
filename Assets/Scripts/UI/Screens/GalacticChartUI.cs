@@ -71,7 +71,7 @@ namespace SpaceTrader.UI.Screens
         public void OnShow()
         {
             var G = GameState.Instance;
-            _fuelText.text = $"Fuel: {G.Ship.Fuel}  Range: {FuelSystem.GetFuelTanks()}";
+            _fuelText.text = $"Fuel: {G.Ship.Fuel}  Range: {G.Ship.Fuel} pc";
             _selectedSystem = G.WarpSystem;
             PlaceDots();
             UpdateSelection();

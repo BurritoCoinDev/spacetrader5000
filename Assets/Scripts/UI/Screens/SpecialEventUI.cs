@@ -122,7 +122,7 @@ namespace SpaceTrader.UI.Screens
                     break;
                 default:
                     _titleText.text = "Special Event";
-                    _descText.text  = $"A special event (#${evt}) occurs at this system.";
+                    _descText.text  = $"A special event (#{evt}) occurs at this system.";
                     break;
             }
         }

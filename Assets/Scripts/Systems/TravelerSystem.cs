@@ -429,11 +429,11 @@ namespace SpaceTrader
 
         static void PlaceSpecialEvents()
         {
-            G.SolarSystem[AcamarSystem].Special   = DragonflyDestroyed;
+            G.SolarSystem[ZalkonSystem].Special    = DragonflyDestroyed; // Dragonfly was heading to Zalkon
             G.SolarSystem[BaratasSystem].Special   = FlyBaratas;
             G.SolarSystem[MelinaSystem].Special    = FlyMelina;
             G.SolarSystem[RegulasSystem].Special   = FlyRegulas;
-            G.SolarSystem[AcamarSystem].Special    = MonsterKilled;
+            G.SolarSystem[AcamarSystem].Special    = MonsterKilled;      // Monster originated at Acamar
             G.SolarSystem[JaporiSystem].Special    = MedicineDelivery;
             G.SolarSystem[UtopiaSystem].Special    = MoonBoughtEvent;
 

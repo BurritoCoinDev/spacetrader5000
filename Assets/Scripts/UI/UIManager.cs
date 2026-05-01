@@ -4,7 +4,6 @@
 
 using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.InputSystem;
 using UnityEngine.UI;
 
 namespace SpaceTrader.UI
@@ -44,9 +43,12 @@ namespace SpaceTrader.UI
             Navigate(GameScreen.Title);
         }
 
-        void Update()
+        void OnGUI()
         {
-            if (Keyboard.current != null && Keyboard.current.escapeKey.wasPressedThisFrame) HandleBack();
+            // OnGUI captures key events regardless of input system, including
+            // the Android hardware back button (which Unity maps to KeyCode.Escape).
+            if (Event.current.type == EventType.KeyDown && Event.current.keyCode == KeyCode.Escape)
+                HandleBack();
         }
 
         // ── Public navigation API ────────────────────────────────────

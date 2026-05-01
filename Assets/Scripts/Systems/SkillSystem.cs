@@ -18,7 +18,7 @@ namespace SpaceTrader
             int max = G.Mercenary[sh.Crew[0]].Trader;
             for (int i = 1; i < MaxCrew; i++)
             {
-                if (sh.Crew[i] < 0) break;
+                if (sh.Crew[i] < 0) continue;
                 if (G.Mercenary[sh.Crew[i]].Trader > max)
                     max = G.Mercenary[sh.Crew[i]].Trader;
             }
@@ -31,7 +31,7 @@ namespace SpaceTrader
             int max = G.Mercenary[sh.Crew[0]].Fighter;
             for (int i = 1; i < MaxCrew; i++)
             {
-                if (sh.Crew[i] < 0) break;
+                if (sh.Crew[i] < 0) continue;
                 if (G.Mercenary[sh.Crew[i]].Fighter > max)
                     max = G.Mercenary[sh.Crew[i]].Fighter;
             }
@@ -44,7 +44,7 @@ namespace SpaceTrader
             int max = G.Mercenary[sh.Crew[0]].Pilot;
             for (int i = 1; i < MaxCrew; i++)
             {
-                if (sh.Crew[i] < 0) break;
+                if (sh.Crew[i] < 0) continue;
                 if (G.Mercenary[sh.Crew[i]].Pilot > max)
                     max = G.Mercenary[sh.Crew[i]].Pilot;
             }
@@ -58,7 +58,7 @@ namespace SpaceTrader
             int max = G.Mercenary[sh.Crew[0]].Engineer;
             for (int i = 1; i < MaxCrew; i++)
             {
-                if (sh.Crew[i] < 0) break;
+                if (sh.Crew[i] < 0) continue;
                 if (G.Mercenary[sh.Crew[i]].Engineer > max)
                     max = G.Mercenary[sh.Crew[i]].Engineer;
             }
@@ -109,7 +109,7 @@ namespace SpaceTrader
         {
             var cmdr = G.Mercenary[sh.Crew[0]];
             int lower = 1;
-            for (int i = 0; i <= MaxSkill; i++)
+            for (int i = 1; i <= MaxSkill; i++)
             {
                 if (cmdr.Pilot    == i) { if (lower++ == n) return GameConstants.PilotSkill; }
                 if (cmdr.Fighter  == i) { if (lower++ == n) return GameConstants.FighterSkill; }
@@ -149,6 +149,9 @@ namespace SpaceTrader
         public static void DecreaseRandomSkill(int amount)
         {
             var cmdr = G.Commander;
+            if (cmdr.Pilot <= amount && cmdr.Fighter <= amount &&
+                cmdr.Trader <= amount && cmdr.Engineer <= amount) return;
+
             int d;
             do { d = GetRandom(MaxSkillType); }
             while ((d == 0 && cmdr.Pilot <= amount)    ||

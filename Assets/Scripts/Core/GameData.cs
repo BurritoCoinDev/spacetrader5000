@@ -97,6 +97,7 @@ namespace SpaceTrader
             "Mercedez",  "Milete",  "Muri-L",   "Mystyc",  "Nandi",
             "Orestes",   "Pancho",  "PS37",     "Quarck",  "Sosumi",
             "Uma",       "Wesley",  "Wonton",   "Yorvick", "Zeethibal",
+            "FamousCaptain", // index 31 = MaxCrewMember — reserved for famous captain NPCs
         };
 
         // Ships indices 0-9 are buyable; 10-14 are special/enemy only

@@ -181,8 +181,18 @@ namespace SpaceTrader.UI.Screens
             w.QtyLabel.text = newQty.ToString();
 
             int diff = newQty - cur;
-            if (diff > 0)      CargoSystem.BuyCargo(idx, diff);
-            else if (diff < 0) CargoSystem.SellCargo(idx, -diff, GameConstants.SellCargo);
+            if (diff > 0)
+            {
+                CargoSystem.BuyCargo(idx, diff);
+            }
+            else if (diff < 0)
+            {
+                // Undo a pending purchase: refund the buy price, not the sell price.
+                int amount = -diff;
+                G.Credits            += G.BuyPrice[idx] * amount;
+                G.Ship.Cargo[idx]    -= amount;
+                G.CurrentSystem.Qty[idx] += amount;
+            }
 
             _creditsText.text = UIFactory.Cr(G.Credits);
             _baysText.text    = $"Bays: {CargoSystem.FreeCargoBays()}/{CargoSystem.TotalCargoBays()}";

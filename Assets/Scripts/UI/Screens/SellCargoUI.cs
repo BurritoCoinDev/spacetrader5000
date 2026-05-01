@@ -17,7 +17,7 @@ namespace SpaceTrader.UI.Screens
         struct RowData
         {
             public TextMeshProUGUI Name, SellPrice, Held, Profit;
-            public UnityEngine.UI.Button SellBtn, DumpBtn;
+            public UnityEngine.UI.Button SellBtn;
             public int Index;
         }
 

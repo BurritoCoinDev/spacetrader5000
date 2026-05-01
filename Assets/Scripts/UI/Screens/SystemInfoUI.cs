@@ -79,7 +79,7 @@ namespace SpaceTrader.UI.Screens
             var sys = G.CurrentSystem;
             var pol = GameData.PoliticsTypes[sys.Politics];
 
-            var panel    = gameObject.transform.parent;
+            var panel    = transform;
             var infoText = panel.Find("InfoBlock/InfoText")?.GetComponent<TextMeshProUGUI>();
             if (infoText != null)
             {

@@ -46,12 +46,12 @@ namespace SpaceTrader.UI
 
         // ── Containers ───────────────────────────────────────────────────
 
-        public static GameObject Panel(Transform parent, string name, Color color = default)
+        public static GameObject Panel(Transform parent, string name, Color? color = null)
         {
             var go  = new GameObject(name);
             go.transform.SetParent(parent, false);
             var img = go.AddComponent<Image>();
-            img.color = color == default ? ColorTheme.PanelBg : color;
+            img.color = color ?? ColorTheme.PanelBg;
             return go;
         }
 

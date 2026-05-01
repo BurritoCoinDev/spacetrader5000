@@ -236,9 +236,13 @@ namespace SpaceTrader.UI.Screens
             var G = GameState.Instance;
             if (EncounterSystem.IsPirate(G.EncounterType))
             {
-                // Pirates strip the player's most valuable cargo
-                for (int i = MaxTradeItem - 1; i >= 0; i--)
-                    G.Ship.Cargo[i] = 0;
+                // Pirates take all cargo when they have enough space (original behavior).
+                // BuyingPrice must also be zeroed — it tracks purchase price per item.
+                for (int i = 0; i < MaxTradeItem; i++)
+                {
+                    G.Ship.Cargo[i]     = 0;
+                    G.BuyingPrice[i]    = 0;
+                }
                 G.PoliceRecordScore += PlunderPirateScore;
                 ShowResult("Pirates took your cargo.", () => ReturnToTravel());
             }

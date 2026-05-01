@@ -49,40 +49,41 @@ namespace SpaceTrader.UI.Screens
 
         void AdvanceTravel()
         {
+            // Always reset to default first so stale listeners never carry over
+            // when the screen is revisited (e.g. returning from an encounter).
+            var btnLabel = _continueBtn.GetComponentInChildren<TextMeshProUGUI>();
+            btnLabel.text = "CONTINUE";
+            _continueBtn.onClick.RemoveAllListeners();
+            _continueBtn.onClick.AddListener(OnContinue);
+            _waitingForInput = false;
+
             var G = GameState.Instance;
 
             if (G.Clicks <= 0)
             {
-                // Arrived
                 TravelerSystem.Arrival();
                 _statusText.text = $"Arrived at {GameData.SolarSystemNames[G.CurrentSystem.NameIndex]}!";
                 _clicksText.text = "";
-                _continueBtn.GetComponentInChildren<TextMeshProUGUI>().text = "DOCK";
+                btnLabel.text = "DOCK";
                 _continueBtn.onClick.RemoveAllListeners();
                 _continueBtn.onClick.AddListener(OnArrival);
                 return;
             }
 
-            // One click of travel
             G.Clicks--;
             int enc = EncounterSystem.DetermineEncounter();
-
             _clicksText.text = $"Parsecs remaining: {G.Clicks}";
 
             if (enc < 0)
             {
-                // No encounter
                 _statusText.text = "Traveling through deep space...";
-                _waitingForInput = false;
-                // Auto-advance with brief delay via Update
             }
             else
             {
-                // Encounter!
                 string encDesc = DescribeEncounter(enc);
                 _statusText.text = $"ENCOUNTER!\n{encDesc}";
                 _waitingForInput = true;
-                _continueBtn.GetComponentInChildren<TextMeshProUGUI>().text = "ENGAGE";
+                btnLabel.text = "ENGAGE";
                 _continueBtn.onClick.RemoveAllListeners();
                 _continueBtn.onClick.AddListener(OnEncounter);
             }
