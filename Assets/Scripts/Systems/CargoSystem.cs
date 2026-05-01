@@ -87,8 +87,8 @@ namespace SpaceTrader
             var sys = G.SolarSystem[systemIdx];
             for (int i = 0; i < MaxTradeItem; i++)
             {
-                if (operation == GameConstants.SellCargo     && sh.Cargo[i] > 0 && G.SellPrice[i] > 0) return true;
-                if (operation == GameConstants.DumpCargo     && sh.Cargo[i] > 0) return true;
+                if (operation == GameConstants.SellCargo && sh.Cargo[i] > 0 && G.SellPrice[i] > 0) return true;
+                if (operation == GameConstants.DumpCargo && sh.Cargo[i] > 0) return true;
                 if (operation == GameConstants.JettisonCargo && sh.Cargo[i] > 0) return true;
             }
             return false;

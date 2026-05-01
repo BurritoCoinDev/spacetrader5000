@@ -83,6 +83,7 @@ namespace SpaceTrader.UI.Screens
                 });
             }
 
+            // Available crew at current system
             for (int m = 1; m < MaxCrewMember && m < GameData.MercenaryNames.Length; m++)
             {
                 bool onCrew = false;

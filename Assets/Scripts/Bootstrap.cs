@@ -4,6 +4,8 @@
 // in the Main scene.
 
 using UnityEngine;
+using UnityEngine.EventSystems;
+using UnityEngine.InputSystem.UI;
 
 namespace SpaceTrader
 {
@@ -12,11 +14,19 @@ namespace SpaceTrader
         void Awake()
         {
             // GameState self-registers as a singleton in its own Awake.
-            // We only need to ensure it exists before anything else runs.
             if (GameState.Instance == null)
             {
                 var go = new GameObject("GameState");
                 go.AddComponent<GameState>();
+            }
+
+            // Unity UI requires an EventSystem to process all input events.
+            if (FindObjectOfType<EventSystem>() == null)
+            {
+                var esGo = new GameObject("EventSystem");
+                DontDestroyOnLoad(esGo);
+                esGo.AddComponent<EventSystem>();
+                esGo.AddComponent<InputSystemUIInputModule>();
             }
         }
 

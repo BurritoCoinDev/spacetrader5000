@@ -311,7 +311,7 @@ namespace SpaceTrader
                 return G.EncounterType = ScarabAttack;
             }
 
-            // Police — skip if already inspected and cleared this voyage (matches original Palm OS behavior)
+            // Police — skip if already inspected and cleared this voyage
             if (pol.StrengthPolice > 0 && !G.Inspected && GetRandom(MaxPolice) < PoliceStrength(sys))
             {
                 GenerateOpponent(Police);

@@ -218,10 +218,10 @@ namespace SpaceTrader.UI.Screens
                 int qty = _rows[i].PendingQty[0];
                 if (qty > 0)
                 {
-                    G.Credits            += G.BuyPrice[i] * qty;
-                    G.Ship.Cargo[i]      -= qty;
+                    G.Credits              += G.BuyPrice[i] * qty;
+                    G.Ship.Cargo[i]        -= qty;
                     G.CurrentSystem.Qty[i] += qty;
-                    _rows[i].PendingQty[0] = 0;
+                    _rows[i].PendingQty[0]  = 0;
                 }
             }
             Refresh();

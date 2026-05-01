@@ -77,7 +77,7 @@ namespace SpaceTrader.UI
             return go;
         }
 
-        // ── Text ────────────────────────────────────────────────────────
+        // ── Text ─────────────────────────────────────────────────────────────
 
         public static TextMeshProUGUI Label(Transform parent, string name,
             string text = "", int size = ColorTheme.FontBody, Color color = default,

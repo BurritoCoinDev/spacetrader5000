@@ -27,7 +27,7 @@ namespace SpaceTrader.UI
         readonly Dictionary<GameScreen, IScreenUI>  _screens  = new();
         readonly Stack<GameScreen>                  _navStack = new();
 
-        // ── Lifecycle ──────────────────────────────────────────────
+        // ── Lifecycle ─────────────────────────────────────────────────────────────
 
         void Awake()
         {
@@ -51,7 +51,7 @@ namespace SpaceTrader.UI
                 HandleBack();
         }
 
-        // ── Public navigation API ────────────────────────────────────
+        // ── Public navigation API ───────────────────────────────────────────────
 
         public void Navigate(GameScreen screen)
         {
@@ -74,7 +74,7 @@ namespace SpaceTrader.UI
         public T GetScreen<T>(GameScreen key) where T : class, IScreenUI
             => _screens.TryGetValue(key, out var s) ? s as T : null;
 
-        // ── Canvas construction ──────────────────────────────────────────
+        // ── Canvas construction ───────────────────────────────────────────────────────
 
         void BuildCanvas()
         {

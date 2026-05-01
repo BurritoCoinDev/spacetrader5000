@@ -64,6 +64,7 @@ namespace SpaceTrader.UI.Screens
 
         void BuildEquipRows(Transform content, string header, int category)
         {
+            // Section divider header
             var divRow = UIFactory.RowPanel(content, $"{header}Hdr", ColorTheme.HeaderBg, 36);
             var divLbl = UIFactory.Label(divRow.transform, "Lbl", header,
                 ColorTheme.FontTiny, ColorTheme.TextAccent);

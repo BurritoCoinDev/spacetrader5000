@@ -49,11 +49,11 @@ namespace SpaceTrader.UI.Screens
                 ColorTheme.FontBody, ColorTheme.TextAccent);
             UIFactory.Pin(_diffLabel.rectTransform, TextAnchor.MiddleCenter, 200, 50);
 
-            var decDiff = UIFactory.SmallBtn(diffRow.transform, "DiffDec", "◀",
+            var decDiff = UIFactory.SmallBtn(diffRow.transform, "DiffDec", "<",
                 () => ChangeDifficulty(-1));
             UIFactory.Pin(decDiff.GetComponent<RectTransform>(), TextAnchor.MiddleRight, 80, 60, -90, 0);
 
-            var incDiff = UIFactory.SmallBtn(diffRow.transform, "DiffInc", "▶",
+            var incDiff = UIFactory.SmallBtn(diffRow.transform, "DiffInc", ">",
                 () => ChangeDifficulty(1));
             UIFactory.Pin(incDiff.GetComponent<RectTransform>(), TextAnchor.MiddleRight, 80, 60, 0, 0);
 
@@ -84,7 +84,7 @@ namespace SpaceTrader.UI.Screens
                     ColorTheme.FontBody, ColorTheme.TextPrimary);
                 UIFactory.Pin(sLbl.rectTransform, TextAnchor.MiddleLeft, 200, 60);
 
-                var decBtn = UIFactory.SmallBtn(row.transform, "Dec", "−",
+                var decBtn = UIFactory.SmallBtn(row.transform, "Dec", "-",
                     () => ChangeSkill(idx, -1));
                 UIFactory.Pin(decBtn.GetComponent<RectTransform>(), TextAnchor.MiddleRight, 70, 60, -160, 0);
 

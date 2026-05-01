@@ -26,9 +26,11 @@ namespace SpaceTrader.UI.Screens
                 ColorTheme.FontSmall, ColorTheme.TextPrimary, TextAlignmentOptions.Left);
             _bodyText.margin = new Vector4(12, 8, 12, 8);
 
-            // Top-anchored stretch (width) + ContentSizeFitter on the text itself.
-            // A full stretch anchor inside a VLG content panel creates a circular
-            // layout dependency that collapses the text height to 0.
+            // Top-anchored width-stretch — NOT full stretch. Full stretch (anchorMax.y=1)
+            // creates a circular dependency with the VLG ContentSizeFitter: content height
+            // is 0 so child height is 0 so TMP preferred height is 0 so content stays 0.
+            // ContentSizeFitter on this element breaks the cycle: TMP reports its preferred
+            // height independently, VLG reads it, content grows to fit.
             var rt = _bodyText.GetComponent<RectTransform>();
             rt.anchorMin = new Vector2(0, 1);
             rt.anchorMax = new Vector2(1, 1);
