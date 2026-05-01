@@ -214,6 +214,10 @@ namespace SpaceTrader.UI.Screens
             int pil = SkillSystem.PilotSkill(G.Ship);
             int oppPil = SkillSystem.PilotSkill(G.Opponent);
 
+            // Attempting to flee from police always hurts your record (successful or not)
+            if (EncounterSystem.IsPolice(G.EncounterType))
+                G.PoliceRecordScore += FleeFromInspection;
+
             if (GameMath.GetRandom(pil + oppPil) >= oppPil)
             {
                 // Escaped
@@ -226,8 +230,6 @@ namespace SpaceTrader.UI.Screens
             bool destroyed = EncounterSystem.ExecuteAttack(G.Opponent, G.Ship, false, true);
             if (destroyed) { OnPlayerDestroyed(); return; }
             _playerFleeing = false;
-            if (EncounterSystem.IsPolice(G.EncounterType))
-                G.PoliceRecordScore += FleeFromInspection;
             RefreshStatus();
         }
 
@@ -245,6 +247,27 @@ namespace SpaceTrader.UI.Screens
                 }
                 G.PoliceRecordScore += PlunderPirateScore;
                 ShowResult("Pirates took your cargo.", () => ReturnToTravel());
+            }
+            else if (EncounterSystem.IsPolice(G.EncounterType))
+            {
+                // Yielding to attacking police triggers the same confiscation as submitting
+                // to an inspection — the player surrenders and the police board the ship.
+                G.Inspected = true;
+                bool hasCont = G.Ship.Cargo[Narcotics] > 0 || G.Ship.Cargo[Firearms] > 0;
+                if (hasCont)
+                {
+                    if (G.Ship.Cargo[Narcotics] > 0) G.PoliceRecordScore += Trafficking;
+                    if (G.Ship.Cargo[Firearms]  > 0) G.PoliceRecordScore += Trafficking;
+                    G.Ship.Cargo[Narcotics]  = 0;
+                    G.BuyingPrice[Narcotics] = 0;
+                    G.Ship.Cargo[Firearms]   = 0;
+                    G.BuyingPrice[Firearms]  = 0;
+                    ShowResult("You surrendered. Police confiscated your contraband.", () => ReturnToTravel());
+                }
+                else
+                {
+                    ShowResult("You surrendered. Police found nothing and let you go.", () => ReturnToTravel());
+                }
             }
             else
             {
@@ -363,9 +386,9 @@ namespace SpaceTrader.UI.Screens
             G.Credits   += bounty;
             G.ReputationScore++;
 
-            if (EncounterSystem.IsPolice(enc))   G.PoliceRecordScore += KillPoliceScore;
-            if (EncounterSystem.IsPirate(enc))   G.PoliceRecordScore += KillPirateScore;
-            if (EncounterSystem.IsTrader(enc))   G.PoliceRecordScore += KillTraderScore;
+            if (EncounterSystem.IsPolice(enc))  { G.PoliceRecordScore += KillPoliceScore; G.PoliceKills++; }
+            if (EncounterSystem.IsPirate(enc))  { G.PoliceRecordScore += KillPirateScore; G.PirateKills++; }
+            if (EncounterSystem.IsTrader(enc))  { G.PoliceRecordScore += KillTraderScore; G.TraderKills++; }
 
             string extraMsg = "";
             if (EncounterSystem.IsSpaceMonster(enc))

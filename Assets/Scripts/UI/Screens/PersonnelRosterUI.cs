@@ -76,7 +76,7 @@ namespace SpaceTrader.UI.Screens
                 int slotIdx = i;
                 int mercIdx = G.Ship.Crew[i];
                 var merc    = G.Mercenary[mercIdx];
-                long daily  = merc.Pilot + merc.Fighter + merc.Trader + merc.Engineer;
+                long daily  = (merc.Pilot + merc.Fighter + merc.Trader + merc.Engineer) * 3;
                 AddMercRow(merc, mercIdx, daily, true, () => {
                     G.Ship.Crew[slotIdx] = -1;
                     BuildAndRefresh();
@@ -94,7 +94,7 @@ namespace SpaceTrader.UI.Screens
 
                 int mercIdx = m;
                 var merc    = G.Mercenary[m];
-                long daily  = merc.Pilot + merc.Fighter + merc.Trader + merc.Engineer;
+                long daily  = (merc.Pilot + merc.Fighter + merc.Trader + merc.Engineer) * 3;
                 AddMercRow(merc, mercIdx, daily, false, () => {
                     if (crewFull) return;
                     for (int s = 1; s < MaxCrew; s++)

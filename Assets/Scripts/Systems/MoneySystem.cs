@@ -11,7 +11,7 @@ namespace SpaceTrader
         static GameState G => GameState.Instance;
 
         public static long InsuranceMoney()
-            => G.Insurance ? ShipPriceSystem.CurrentShipPriceWithoutCargo(true) / 10 : 0;
+            => G.Insurance ? ShipPriceSystem.CurrentShipPriceWithoutCargo(true) / 50 : 0;
 
         public static long MercenaryMoney()
         {
@@ -33,13 +33,11 @@ namespace SpaceTrader
             return GameMath.Max(0L, G.Credits - reserve);
         }
 
-        // Net worth: credits + cargo value + ship value - debt
+        // Net worth: credits + ship value (including cargo at purchase price) - debt
+        // CurrentShipPrice already includes cargo, so do not add it again.
         public static long CurrentWorth()
         {
-            long worth = G.Credits - G.Debt + ShipPriceSystem.CurrentShipPrice(false);
-            for (int i = 0; i < MaxTradeItem; i++)
-                worth += G.Ship.Cargo[i] * G.BuyingPrice[i];
-            return worth;
+            return G.Credits - G.Debt + ShipPriceSystem.CurrentShipPrice(false);
         }
 
         public static void PayInterest()

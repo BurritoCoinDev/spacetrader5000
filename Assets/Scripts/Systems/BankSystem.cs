@@ -13,7 +13,7 @@ namespace SpaceTrader
         public static long MaxLoan()
         {
             long worth = ShipPriceSystem.CurrentShipPriceWithoutCargo(true);
-            long max   = GameMath.Max(0L, worth / 4 - G.Debt);
+            long max   = GameMath.Max(0L, worth / 10 - G.Debt);
             return GameMath.Min(max, DebtTooLarge - G.Debt);
         }
 

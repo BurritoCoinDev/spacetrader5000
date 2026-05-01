@@ -150,6 +150,38 @@ namespace SpaceTrader
             Difficulty          = Normal;
             GameLoaded          = false;
 
+            // Quest / story flags
+            MonsterStatus       = 0;
+            DragonflyStatus     = 0;
+            JaporiDiseaseStatus = 0;
+            MoonBought          = false;
+            JarekStatus         = 0;
+            InvasionStatus      = 0;
+            ExperimentStatus    = 0;
+            FabricRipProbability= 0;
+            VeryRareEncounter   = 0;
+            ReactorStatus       = 0;
+            ScarabStatus        = 0;
+            WildStatus          = 0;
+            HullUpgraded        = false;
+            ArtifactOnBoard     = false;
+
+            // Ship / bank state
+            EscapePod           = false;
+            Insurance           = false;
+            NoClaim             = 0;
+
+            // Travel state
+            Clicks              = 0;
+            WarpSystem          = 0;
+            TrackedSystem       = -1;
+            Raided              = false;
+            Inspected           = false;
+            LitterWarning       = false;
+            AlreadyPaidForNewspaper = false;
+            ArrivedViaWormhole  = false;
+            PossibleToGoThroughRip = false;
+
             for (int i = 0; i < MaxTradeItem; i++)
             {
                 BuyPrice[i]     = 0;

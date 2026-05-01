@@ -305,6 +305,12 @@ namespace SpaceTrader
                 return G.EncounterType = DragonflyAttack;
             }
 
+            if (G.ScarabStatus == 1 && GetRandom(100) < 85)
+            {
+                G.Opponent = G.Scarab_Ship.Clone();
+                return G.EncounterType = ScarabAttack;
+            }
+
             // Police — skip if already inspected and cleared this voyage (matches original Palm OS behavior)
             if (pol.StrengthPolice > 0 && !G.Inspected && GetRandom(MaxPolice) < PoliceStrength(sys))
             {
