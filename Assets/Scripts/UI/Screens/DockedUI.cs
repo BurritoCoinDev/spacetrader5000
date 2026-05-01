@@ -108,6 +108,7 @@ namespace SpaceTrader.UI.Screens
                 ("SYS INFO",     GameScreen.SystemInfo),
                 ("CMDR STATUS",  GameScreen.CommanderStatus),
                 ("GAL CHART",    GameScreen.GalacticChart),
+                ("SHORT RANGE",  GameScreen.ShortRangeChart),
                 ("WARP",         GameScreen.Warp),
                 ("HIGH SCORES",  GameScreen.HighScores),
                 ("OPTIONS",      GameScreen.Options),

@@ -14,7 +14,8 @@ namespace SpaceTrader.UI
         BuyCargo, SellCargo, Shipyard,
         BuyEquipment, SellEquipment, PersonnelRoster, Bank,
         SystemInfo, CommanderStatus, Options,
-        GalacticChart, Warp, Travel,
+        GalacticChart, ShortRangeChart, TargetSystem, AveragePriceList,
+        Warp, Travel,
         Encounter, SpecialEvent, HighScores,
     }
 
@@ -114,8 +115,11 @@ namespace SpaceTrader.UI
             AddScreen<Screens.SystemInfoUI>      (GameScreen.SystemInfo);
             AddScreen<Screens.CommanderStatusUI> (GameScreen.CommanderStatus);
             AddScreen<Screens.OptionsUI>         (GameScreen.Options);
-            AddScreen<Screens.GalacticChartUI>   (GameScreen.GalacticChart);
-            AddScreen<Screens.WarpUI>            (GameScreen.Warp);
+            AddScreen<Screens.GalacticChartUI>      (GameScreen.GalacticChart);
+            AddScreen<Screens.ShortRangeChartUI>   (GameScreen.ShortRangeChart);
+            AddScreen<Screens.TargetSystemUI>      (GameScreen.TargetSystem);
+            AddScreen<Screens.AveragePriceListUI>  (GameScreen.AveragePriceList);
+            AddScreen<Screens.WarpUI>              (GameScreen.Warp);
             AddScreen<Screens.TravelUI>          (GameScreen.Travel);
             AddScreen<Screens.EncounterUI>       (GameScreen.Encounter);
             AddScreen<Screens.SpecialEventUI>    (GameScreen.SpecialEvent);
