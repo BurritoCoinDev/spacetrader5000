@@ -271,7 +271,7 @@ namespace SpaceTrader
             // Tribbles multiply
             if (G.Ship.Tribbles > 0 && G.ReactorStatus == 0)
             {
-                G.Ship.Tribbles += 1 + GetRandom(G.Ship.Tribbles > 100 ? G.Ship.Tribbles / 100 : 1);
+                G.Ship.Tribbles += 1 + GetRandom((int)(G.Ship.Tribbles > 100 ? G.Ship.Tribbles / 100 : 1));
                 if (G.Ship.Tribbles > MaxTribbles) G.Ship.Tribbles = MaxTribbles;
             }
 

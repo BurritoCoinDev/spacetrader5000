@@ -77,16 +77,17 @@ namespace SpaceTrader.UI
             tmp.color          = color == default ? ColorTheme.TextPrimary : color;
             tmp.alignment      = align;
             tmp.overflowMode   = TextOverflowModes.Ellipsis;
-            tmp.enableWordWrapping = false;
+            tmp.textWrappingMode = TextWrappingModes.NoWrap;
             return tmp;
         }
 
         public static TextMeshProUGUI LabelWrap(Transform parent, string name,
-            string text = "", int size = ColorTheme.FontBody, Color color = default)
+            string text = "", int size = ColorTheme.FontBody, Color color = default,
+            TextAlignmentOptions align = TextAlignmentOptions.Left)
         {
-            var tmp = Label(parent, name, text, size, color);
-            tmp.enableWordWrapping = true;
-            tmp.overflowMode       = TextOverflowModes.Overflow;
+            var tmp = Label(parent, name, text, size, color, align);
+            tmp.textWrappingMode = TextWrappingModes.Normal;
+            tmp.overflowMode     = TextOverflowModes.Overflow;
             return tmp;
         }
 
