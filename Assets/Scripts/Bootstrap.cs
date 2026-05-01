@@ -21,7 +21,7 @@ namespace SpaceTrader
             }
 
             // Unity UI requires an EventSystem to process all input events.
-            if (FindObjectOfType<EventSystem>() == null)
+            if (FindAnyObjectByType<EventSystem>() == null)
             {
                 var esGo = new GameObject("EventSystem");
                 DontDestroyOnLoad(esGo);
