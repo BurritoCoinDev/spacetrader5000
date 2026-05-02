@@ -22,7 +22,7 @@ namespace SpaceTrader.UI.Screens
         }
 
         TextMeshProUGUI _sysName, _resourceText, _bayText;
-        Button _toggleBtn;
+        Button _toggleBtn, _prevBtn, _nextBtn;
         bool _showDifference;
 
         readonly ItemCell[] _cells = new ItemCell[MaxTradeItem];
@@ -45,9 +45,20 @@ namespace SpaceTrader.UI.Screens
             UIFactory.SetAnchored(nameStrip.GetComponent<RectTransform>(),
                 new Vector2(0, 0.86f), new Vector2(1, 0.915f), Vector2.zero, Vector2.zero);
 
+            _prevBtn = UIFactory.SmallBtn(nameStrip.transform, "Prev", "<",
+                () => CycleTarget(-1));
+            UIFactory.SetAnchored(_prevBtn.GetComponent<RectTransform>(),
+                new Vector2(0, 0.05f), new Vector2(0.13f, 0.95f), new Vector2(4, 0), new Vector2(-2, 0));
+
             _sysName = UIFactory.Label(nameStrip.transform, "SysName", "",
                 ColorTheme.FontBody, ColorTheme.TextAccent, TextAlignmentOptions.Center);
-            UIFactory.Stretch(_sysName.rectTransform, 8, 8, 4, 4);
+            UIFactory.SetAnchored(_sysName.rectTransform,
+                new Vector2(0.13f, 0), new Vector2(0.87f, 1), new Vector2(4, 4), new Vector2(-4, -4));
+
+            _nextBtn = UIFactory.SmallBtn(nameStrip.transform, "Next", ">",
+                () => CycleTarget(1));
+            UIFactory.SetAnchored(_nextBtn.GetComponent<RectTransform>(),
+                new Vector2(0.87f, 0.05f), new Vector2(1f, 0.95f), new Vector2(2, 0), new Vector2(-4, 0));
 
             // ── Resource text ─────────────────────────────────────────────────
             _resourceText = UIFactory.LabelWrap(panel.transform, "ResText", "",
@@ -182,6 +193,20 @@ namespace SpaceTrader.UI.Screens
             int target = G.WarpSystem >= 0 ? G.WarpSystem : G.Commander.CurSystem;
             int cur    = G.Commander.CurSystem;
 
+            // Update nav arrow availability
+            long fuel = G.Ship.Fuel;
+            int reachableCount = 0;
+            for (int i = 0; i < MaxSolarSystem; i++)
+            {
+                if (i == cur) continue;
+                long d = GameMath.RealDistance(G.SolarSystem[cur], G.SolarSystem[i]);
+                if (d <= fuel || TravelerSystem.WormholeExists(cur, i))
+                    reachableCount++;
+            }
+            bool hasOthers = reachableCount > 0;
+            _prevBtn.interactable = hasOthers;
+            _nextBtn.interactable = hasOthers;
+
             var sys = G.SolarSystem[target];
             _sysName.text = GameData.SolarSystemNames[sys.NameIndex];
             _resourceText.text = sys.SpecialResources > 0
@@ -248,6 +273,32 @@ namespace SpaceTrader.UI.Screens
                 bool illegal = (i == Narcotics || i == Firearms);
                 _cells[i].NameLbl.fontStyle = illegal ? FontStyles.Bold : FontStyles.Normal;
             }
+        }
+
+        void CycleTarget(int dir)
+        {
+            var G   = GameState.Instance;
+            int cur = G.Commander.CurSystem;
+            int t   = G.WarpSystem >= 0 ? G.WarpSystem : cur;
+            long fuel = G.Ship.Fuel;
+
+            var reachable = new List<int>();
+            for (int i = 0; i < MaxSolarSystem; i++)
+            {
+                if (i == cur) continue;
+                long d = GameMath.RealDistance(G.SolarSystem[cur], G.SolarSystem[i]);
+                if (d <= fuel || TravelerSystem.WormholeExists(cur, i))
+                    reachable.Add(i);
+            }
+
+            if (reachable.Count == 0) return;
+
+            int pos = reachable.IndexOf(t);
+            if (pos < 0) pos = 0;
+            else pos = (pos + dir + reachable.Count) % reachable.Count;
+
+            G.WarpSystem = reachable[pos];
+            RefreshPrices();
         }
 
         void OnToggle()
