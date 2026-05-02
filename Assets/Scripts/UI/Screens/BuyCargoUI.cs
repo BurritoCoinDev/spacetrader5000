@@ -41,11 +41,11 @@ namespace SpaceTrader.UI.Screens
                 new Vector2(0, 0.88f), new Vector2(1, 0.935f), Vector2.zero, Vector2.zero);
 
             _creditsText = UIFactory.Label(strip.transform, "Credits", "",
-                ColorTheme.FontBody, ColorTheme.TextPositive, TextAlignmentOptions.Left);
+                ColorTheme.FontHeader, ColorTheme.TextPositive, TextAlignmentOptions.Left);
             UIFactory.Stretch(_creditsText.rectTransform, 12, 12, 4, 4);
 
             _baysText = UIFactory.Label(strip.transform, "Bays", "",
-                ColorTheme.FontBody, ColorTheme.TextSecondary, TextAlignmentOptions.Right);
+                ColorTheme.FontHeader, ColorTheme.TextSecondary, TextAlignmentOptions.Right);
             UIFactory.Stretch(_baysText.rectTransform, 12, 12, 4, 4);
 
             var colHdr = UIFactory.Panel(panel.transform, "ColHdr", ColorTheme.HeaderBg);
@@ -107,7 +107,7 @@ namespace SpaceTrader.UI.Screens
                 float xMin = ColX[hdrs[i].col];
                 float xMax = colSpanEnd[i];
                 var lbl = UIFactory.Label(parent, hdrs[i].text, hdrs[i].text,
-                    ColorTheme.FontSmall, ColorTheme.TextSecondary, hdrs[i].align);
+                    ColorTheme.FontBody, ColorTheme.TextSecondary, hdrs[i].align);
                 UIFactory.SetAnchored(lbl.rectTransform,
                     new Vector2(xMin, 0), new Vector2(xMax, 1),
                     new Vector2(4, 2), new Vector2(-4, -2));
@@ -135,48 +135,48 @@ namespace SpaceTrader.UI.Screens
                 var w = new RowWidgets { PendingQty = new[] { 0 } };
 
                 w.Name = UIFactory.Label(row.transform, "Name", GameData.Tradeitems[i].Name,
-                    ColorTheme.FontSmall, ColorTheme.TextPrimary);
+                    ColorTheme.FontBody, ColorTheme.TextPrimary);
                 UIFactory.SetAnchored(w.Name.rectTransform,
                     new Vector2(ColX[0], 0), new Vector2(ColX[1], 1),
                     new Vector2(8, 4), new Vector2(-4, -4));
 
                 w.Price = UIFactory.Label(row.transform, "Price", "---",
-                    ColorTheme.FontSmall, ColorTheme.TextPositive, TextAlignmentOptions.Right);
+                    ColorTheme.FontBody, ColorTheme.TextPositive, TextAlignmentOptions.Right);
                 UIFactory.SetAnchored(w.Price.rectTransform,
                     new Vector2(ColX[1], 0), new Vector2(ColX[2], 1),
                     new Vector2(4, 4), new Vector2(-4, -4));
 
                 w.Avail = UIFactory.Label(row.transform, "Avail", "---",
-                    ColorTheme.FontSmall, ColorTheme.TextSecondary, TextAlignmentOptions.Center);
+                    ColorTheme.FontBody, ColorTheme.TextSecondary, TextAlignmentOptions.Center);
                 UIFactory.SetAnchored(w.Avail.rectTransform,
                     new Vector2(ColX[2], 0), new Vector2(ColX[3], 1),
                     new Vector2(4, 4), new Vector2(-4, -4));
 
                 w.Held = UIFactory.Label(row.transform, "Held", "0",
-                    ColorTheme.FontSmall, ColorTheme.TextSecondary, TextAlignmentOptions.Center);
+                    ColorTheme.FontBody, ColorTheme.TextSecondary, TextAlignmentOptions.Center);
                 UIFactory.SetAnchored(w.Held.rectTransform,
                     new Vector2(ColX[3], 0), new Vector2(ColX[4], 1),
                     new Vector2(4, 4), new Vector2(-4, -4));
 
-                w.DecBtn = UIFactory.SmallBtn(row.transform, "Dec", "-",
-                    () => AdjustQty(idx, -1));
+                w.DecBtn = UIFactory.Btn(row.transform, "Dec", "-",
+                    () => AdjustQty(idx, -1), ColorTheme.ButtonNormal);
                 UIFactory.SetAnchored(w.DecBtn.GetComponent<RectTransform>(),
                     new Vector2(ColX[4], 0.1f), new Vector2(ColX[5], 0.9f),
                     new Vector2(2, 0), new Vector2(-2, 0));
 
                 w.QtyLabel = UIFactory.Label(row.transform, "Qty", "0",
-                    ColorTheme.FontBody, ColorTheme.TextAccent, TextAlignmentOptions.Center);
+                    ColorTheme.FontHeader, ColorTheme.TextAccent, TextAlignmentOptions.Center);
                 UIFactory.SetAnchored(w.QtyLabel.rectTransform,
                     new Vector2(ColX[5], 0), new Vector2(ColX[6], 1),
                     new Vector2(2, 4), new Vector2(-2, -4));
 
-                w.IncBtn = UIFactory.SmallBtn(row.transform, "Inc", "+",
-                    () => AdjustQty(idx, 1));
+                w.IncBtn = UIFactory.Btn(row.transform, "Inc", "+",
+                    () => AdjustQty(idx, 1), ColorTheme.ButtonNormal);
                 UIFactory.SetAnchored(w.IncBtn.GetComponent<RectTransform>(),
                     new Vector2(ColX[6], 0.1f), new Vector2(ColX[7], 0.9f),
                     new Vector2(2, 0), new Vector2(-2, 0));
 
-                w.MaxBtn = UIFactory.SmallBtn(row.transform, "Max", "MAX",
+                w.MaxBtn = UIFactory.Btn(row.transform, "Max", "MAX",
                     () => BuyMax(idx), ColorTheme.ButtonSuccess);
                 UIFactory.SetAnchored(w.MaxBtn.GetComponent<RectTransform>(),
                     new Vector2(ColX[7], 0.1f), new Vector2(ColX[8], 0.9f),
