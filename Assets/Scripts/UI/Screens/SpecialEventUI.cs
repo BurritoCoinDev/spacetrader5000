@@ -93,6 +93,7 @@ namespace SpaceTrader.UI.Screens
                                                 && CargoSystem.FreeCargoBays() >= 10;
                 case AlienArtifact:         return !G.ArtifactOnBoard;
                 case ArtifactDelivery:      return G.ArtifactOnBoard;
+                case MedicineDelivery:      return G.JaporiDiseaseStatus == 1;
                 default:                    return true;
             }
         }
@@ -122,8 +123,36 @@ namespace SpaceTrader.UI.Screens
                     _descText.text  = "You have slain the Space Monster! The system is safe again.";
                     break;
                 case MedicineDelivery:
-                    _titleText.text = "Medical Request";
-                    _descText.text  = "The Japori government needs medicine. Will you carry a shipment there?";
+                    _titleText.text = "Antidote Delivered";
+                    _descText.text  = "The antidote arrives just in time. The Japori government rewards you with two skill increases.";
+                    break;
+                case JaporiDisease:
+                    _titleText.text = "Plague on Japori";
+                    _descText.text  = "Doctors plead for an antidote to be carried to Japori. It will fill 10 cargo bays. Accept?";
+                    break;
+                case AlienArtifact:
+                    _titleText.text = "Alien Artifact";
+                    _descText.text  = "A trader offers you a strange alien artifact. It may attract Mantis attention. Accept?";
+                    break;
+                case ArtifactDelivery:
+                    _titleText.text = "Artifact Delivered";
+                    _descText.text  = "Researchers gratefully accept the alien artifact. Mantis attacks will cease.";
+                    break;
+                case GetSpecialLaser:
+                    _titleText.text = "Morgan's Laser";
+                    _descText.text  = "Doctor Morgan presents you with his unique laser as thanks for delivering the reactor.";
+                    break;
+                case InstallLightningShield:
+                    _titleText.text = "Lightning Shield";
+                    _descText.text  = "An engineer offers to install the lightning shield recovered from the Dragonfly. Accept?";
+                    break;
+                case EraseRecord:
+                    _titleText.text = "Erase Record";
+                    _descText.text  = "A skilled hacker offers to erase your criminal record. Accept the offer?";
+                    break;
+                case WildGetsOut:
+                    _titleText.text = "Wild Departs";
+                    _descText.text  = "Jonathan Wild leaves your ship at Kravat. He sends Zeethibal as thanks — find him here.";
                     break;
                 case MoonBoughtEvent:
                     _titleText.text = "Moon For Sale";
@@ -311,8 +340,10 @@ namespace SpaceTrader.UI.Screens
 
                 case ArtifactDelivery:
                     G.ArtifactOnBoard = false;
-                    // Delivery reward — original gives a Reflective Shield
-                    // (handled at Daled normally; here we just mark complete).
+                    // Modest credit reward + reputation bump for completing
+                    // the artifact-delivery side quest.
+                    G.Credits += 20000;
+                    G.ReputationScore += 5;
                     break;
 
                 case ReactorDelivered:
