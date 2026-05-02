@@ -90,6 +90,10 @@ namespace SpaceTrader.UI.Screens
                                 // an offensive action this encounter (so the
                                 // peaceful-attack record penalty applies once).
 
+        // Trader buy overlay
+        GameObject _traderDialog;
+        Transform  _traderContent;
+
         public void Initialize(GameObject panel)
         {
             UIFactory.Stretch(panel.GetComponent<RectTransform>());
@@ -127,7 +131,39 @@ namespace SpaceTrader.UI.Screens
             glg.padding         = new RectOffset(4, 4, 4, 4);
             glg.constraint      = GridLayoutGroup.Constraint.FixedColumnCount;
             glg.constraintCount = 2;
+
+            BuildTraderDialog(panel);
         }
+
+        void BuildTraderDialog(GameObject panel)
+        {
+            _traderDialog = UIFactory.Panel(panel.transform, "TraderDialog",
+                new Color(0.08f, 0.08f, 0.25f, 0.97f));
+            UIFactory.SetAnchored(_traderDialog.GetComponent<RectTransform>(),
+                new Vector2(0.02f, 0.18f), new Vector2(0.98f, 0.92f), Vector2.zero, Vector2.zero);
+
+            var titleLbl = UIFactory.Label(_traderDialog.transform, "TraderTitle", "TRADER CARGO",
+                ColorTheme.FontHeader, ColorTheme.TextAccent, TextAlignmentOptions.Center);
+            UIFactory.SetAnchored(titleLbl.rectTransform,
+                new Vector2(0, 0.85f), Vector2.one, new Vector2(8, 0), new Vector2(-8, 0));
+
+            var contentGo = UIFactory.TransparentPanel(_traderDialog.transform, "Content");
+            UIFactory.SetAnchored(contentGo.GetComponent<RectTransform>(),
+                new Vector2(0, 0.18f), new Vector2(1, 0.85f), new Vector2(4, 4), new Vector2(-4, -4));
+            var vlg = contentGo.AddComponent<VerticalLayoutGroup>();
+            vlg.spacing            = 6;
+            vlg.padding            = new RectOffset(6, 6, 4, 4);
+            vlg.childForceExpandWidth  = true;
+            vlg.childForceExpandHeight = false;
+            _traderContent = contentGo.transform;
+
+            var doneBtn = UIFactory.Btn(_traderDialog.transform, "Done", "DONE",
+                () => _traderDialog.SetActive(false),
+                ColorTheme.ButtonNormal, ColorTheme.FontButton);
+            UIFactory.SetAnchored(doneBtn.GetComponent<RectTransform>(),
+                new Vector2(0.25f, 0.02f), new Vector2(0.75f, 0.16f), Vector2.zero, Vector2.zero);
+
+            _traderDialog.SetActive(false);
 
         // Builds a "ship card": placeholder colored ship icon up top, then the
         // ship name, hull, and shield stacked underneath. Real sprites can be
@@ -234,6 +270,12 @@ namespace SpaceTrader.UI.Screens
                 AddBtn("BRIBE",       OnBribe,            ColorTheme.ButtonNormal);
                 if (canFight) AddBtn("ATTACK", OnAttack,  ColorTheme.ButtonDanger);
             }
+            else if (enc == TraderSell)
+            {
+                AddBtn("BUY",    OpenTraderDialog, ColorTheme.ButtonSuccess);
+                AddBtn("IGNORE", OnIgnore,         ColorTheme.ButtonNormal);
+                if (canFight) AddBtn("ATTACK", OnAttack, ColorTheme.ButtonDanger);
+            }
             else if (EncounterSystem.IsTrader(enc))
             {
                 AddBtn("IGNORE",    OnIgnore,    ColorTheme.ButtonNormal);
@@ -326,17 +368,31 @@ namespace SpaceTrader.UI.Screens
             int pilSum = pil + oppPil;
             if (pilSum <= 0 || GameMath.GetRandom(pilSum) >= oppPil)
             {
-                // Escaped
                 ShowResult("You escaped!", () => ReturnToTravel());
                 return;
             }
 
-            // Failed to flee — opponent gets a free shot
+            // Failed to flee — opponent fires a free shot while player evades
+            string oppName = GameData.Shiptypes[G.Opponent.Type].Name;
+            long hullBefore   = G.Ship.Hull;
+            long shieldBefore = EncounterSystem.TotalShieldStrength(G.Ship);
+
             _playerFleeing = true;
             bool destroyed = EncounterSystem.ExecuteAttack(G.Opponent, G.Ship, false, true);
-            if (destroyed) { OnPlayerDestroyed(); return; }
             _playerFleeing = false;
+
+            if (destroyed) { OnPlayerDestroyed(); return; }
+
+            bool wasHit = G.Ship.Hull < hullBefore
+                       || EncounterSystem.TotalShieldStrength(G.Ship) < shieldBefore;
+            string hitLine = wasHit
+                ? $"The {oppName} hits you."
+                : $"The {oppName} missed you.";
+
             RefreshStatus();
+            ShowResult(
+                $"{hitLine}\nThe {oppName} is still following you.\nYour opponent attacks.",
+                () => { BuildActions(); RefreshStatus(); });
         }
 
         void OnYield()
@@ -419,6 +475,86 @@ namespace SpaceTrader.UI.Screens
             if (bribe <= 0) { ShowResult("You have nothing to offer.", () => { BuildActions(); }); return; }
             G.Credits -= bribe;
             ShowResult($"You bribed the police with {UIFactory.Cr(bribe)}.", () => ReturnToTravel());
+        }
+
+        void OpenTraderDialog()
+        {
+            var G = GameState.Instance;
+            foreach (Transform child in _traderContent) Destroy(child.gameObject);
+
+            bool hasGoods = false;
+            for (int i = 0; i < MaxTradeItem; i++)
+            {
+                if (G.Opponent.Cargo[i] <= 0) continue;
+                long price = TraderPriceFor(i);
+                if (price <= 0) continue;
+                hasGoods = true;
+
+                int idx = i; // capture for closure
+
+                var row = UIFactory.Panel(_traderContent, $"Row{i}",
+                    i % 2 == 0 ? ColorTheme.RowBg : ColorTheme.RowAlt);
+                var le = row.AddComponent<LayoutElement>();
+                le.preferredHeight = 80;
+
+                var nameLbl = UIFactory.Label(row.transform, "Name",
+                    GameData.Tradeitems[i].Name,
+                    ColorTheme.FontBody, ColorTheme.TextPrimary, TextAlignmentOptions.Left);
+                UIFactory.SetAnchored(nameLbl.rectTransform,
+                    new Vector2(0, 0), new Vector2(0.38f, 1), new Vector2(8, 2), new Vector2(-2, -2));
+
+                var infoLbl = UIFactory.Label(row.transform, "Info",
+                    $"{G.Opponent.Cargo[i]} @ {UIFactory.Cr(price)}",
+                    ColorTheme.FontSmall, ColorTheme.TextSecondary, TextAlignmentOptions.Center);
+                UIFactory.SetAnchored(infoLbl.rectTransform,
+                    new Vector2(0.38f, 0), new Vector2(0.72f, 1), new Vector2(2, 2), new Vector2(-2, -2));
+
+                var buyBtn = UIFactory.SmallBtn(row.transform, "Buy", "BUY",
+                    () => { BuyFromTrader(idx, G.Opponent.Cargo[idx]); OpenTraderDialog(); });
+                UIFactory.SetAnchored(buyBtn.GetComponent<RectTransform>(),
+                    new Vector2(0.73f, 0.08f), new Vector2(0.98f, 0.92f), Vector2.zero, Vector2.zero);
+            }
+
+            if (!hasGoods)
+            {
+                var noGoodsLbl = UIFactory.Label(_traderContent, "NoGoods",
+                    "Trader has no goods available.",
+                    ColorTheme.FontBody, ColorTheme.TextSecondary, TextAlignmentOptions.Center);
+                var le = noGoodsLbl.gameObject.AddComponent<LayoutElement>();
+                le.preferredHeight = 80;
+            }
+
+            _traderDialog.SetActive(true);
+        }
+
+        long TraderPriceFor(int item)
+        {
+            var G = GameState.Instance;
+            if (G.BuyPrice[item] > 0) return G.BuyPrice[item];
+            var sys = G.CurrentSystem;
+            return TravelerSystem.StandardPrice(item, sys.Size, sys.TechLevel, sys.Politics, sys.SpecialResources);
+        }
+
+        void BuyFromTrader(int item, int amount)
+        {
+            var G     = GameState.Instance;
+            long price = TraderPriceFor(item);
+            if (price <= 0 || amount <= 0) return;
+
+            int maxByMoney = price > 0 ? (int)(MoneySystem.ToSpend() / price) : 0;
+            int maxBySpace = CargoSystem.FreeCargoBays();
+            int maxByStock = G.Opponent.Cargo[item];
+            int qty = GameMath.Min(GameMath.Min(maxByMoney, maxBySpace), GameMath.Min(amount, maxByStock));
+            if (qty <= 0) return;
+
+            long cost = price * qty;
+            G.Credits          -= cost;
+            G.Ship.Cargo[item] += qty;
+            G.Opponent.Cargo[item] -= qty;
+            // Maintain running-average purchase price for profit tracking
+            int newQty = G.Ship.Cargo[item];
+            if (newQty > 0)
+                G.BuyingPrice[item] = (G.BuyingPrice[item] * (newQty - qty) + price * qty) / newQty;
         }
 
         void OnIgnore()

@@ -247,10 +247,28 @@ namespace SpaceTrader
             ShuffleStatus();
             DeterminePrices(G.WarpSystem);
 
+            G.ArrivalAutoNotice = "";
             if (G.AutoFuel)
-                FuelSystem.BuyFuel(FuelSystem.GetFuelTanks() - FuelSystem.GetFuel());
+            {
+                int fuelNeeded = FuelSystem.GetFuelTanks() - FuelSystem.GetFuel();
+                if (fuelNeeded > 0)
+                {
+                    long fuelCost = FuelSystem.FuelCostFor(fuelNeeded);
+                    FuelSystem.BuyFuel(fuelNeeded);
+                    if (G.Ship.Fuel < FuelSystem.GetFuelTanks())
+                        G.ArrivalAutoNotice += "Auto-fuel: insufficient credits for full tank.\n";
+                }
+            }
             if (G.AutoRepair)
-                ShipyardSystem.BuyRepairs((int)(ShipyardSystem.GetHullStrength() - G.Ship.Hull));
+            {
+                int repairNeeded = (int)(ShipyardSystem.GetHullStrength() - G.Ship.Hull);
+                if (repairNeeded > 0)
+                {
+                    ShipyardSystem.BuyRepairs(repairNeeded);
+                    if (G.Ship.Hull < ShipyardSystem.GetHullStrength())
+                        G.ArrivalAutoNotice += "Auto-repair: insufficient credits for full repair.\n";
+                }
+            }
 
             // Tribble logic — mirrors original Traveler.c arrival handling
             if (G.Ship.Tribbles > 0)

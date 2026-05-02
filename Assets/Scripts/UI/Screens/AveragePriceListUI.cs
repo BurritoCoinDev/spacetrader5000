@@ -21,7 +21,7 @@ namespace SpaceTrader.UI.Screens
             public Button          Btn;
         }
 
-        TextMeshProUGUI _sysName, _resourceText, _bayText;
+        TextMeshProUGUI _sysName, _resourceText, _bayText, _warpError;
         Button _toggleBtn, _prevBtn, _nextBtn;
         bool _showDifference;
 
@@ -94,8 +94,13 @@ namespace SpaceTrader.UI.Screens
             UIFactory.SetAnchored(srcBtn.GetComponent<RectTransform>(),
                 new Vector2(0.03f, 0.02f), new Vector2(0.60f, 0.11f), Vector2.zero, Vector2.zero);
 
+            _warpError = UIFactory.LabelWrap(panel.transform, "WarpErr", "",
+                ColorTheme.FontSmall, ColorTheme.TextNegative, TextAlignmentOptions.Center);
+            UIFactory.SetAnchored(_warpError.rectTransform,
+                new Vector2(0.62f, 0.35f), new Vector2(0.98f, 0.42f), Vector2.zero, Vector2.zero);
+
             var warpBtn = UIFactory.Btn(panel.transform, "Warp", "WARP",
-                () => UIManager.Instance.Navigate(GameScreen.Warp),
+                OnWarpDirect,
                 ColorTheme.ButtonSuccess, ColorTheme.FontButton);
             UIFactory.SetAnchored(warpBtn.GetComponent<RectTransform>(),
                 new Vector2(0.64f, 0.02f), new Vector2(0.97f, 0.34f), Vector2.zero, Vector2.zero);
@@ -184,6 +189,7 @@ namespace SpaceTrader.UI.Screens
         public void OnShow()
         {
             _buyDialog.SetActive(false);
+            _warpError.text = "";
             RefreshPrices();
         }
 
@@ -299,6 +305,33 @@ namespace SpaceTrader.UI.Screens
 
             G.WarpSystem = reachable[pos];
             RefreshPrices();
+        }
+
+        void OnWarpDirect()
+        {
+            _warpError.text = "";
+            var result = TravelerSystem.DoWarp(false);
+            switch (result)
+            {
+                case TravelerSystem.WarpResult.Success:
+                    UIManager.Instance.Navigate(GameScreen.Travel);
+                    break;
+                case TravelerSystem.WarpResult.DebtTooLarge:
+                    _warpError.text = "Cannot warp — debt too large!";
+                    break;
+                case TravelerSystem.WarpResult.CantPayMercenaries:
+                    _warpError.text = "Cannot pay crew!";
+                    break;
+                case TravelerSystem.WarpResult.CantPayInsurance:
+                    _warpError.text = "Cannot pay insurance!";
+                    break;
+                case TravelerSystem.WarpResult.CantPayWormholeTax:
+                    _warpError.text = "Cannot pay wormhole toll!";
+                    break;
+                case TravelerSystem.WarpResult.WildNeedsWeapon:
+                    _warpError.text = "Wild requires a beam laser!";
+                    break;
+            }
         }
 
         void OnToggle()

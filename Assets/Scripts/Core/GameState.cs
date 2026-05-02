@@ -120,6 +120,10 @@ namespace SpaceTrader
         public bool  RemindLoans            = true;
         public bool  CanSuperWarp           = false;
 
+        // Set by TravelerSystem.Arrival() to report auto-fuel/repair outcomes;
+        // DockedUI reads and clears it in OnShow().
+        public string ArrivalAutoNotice     = "";
+
         public HighScore[] Hscores          = new HighScore[MaxHighScore];
 
         // Special enemy ships (initialized by Reset / StartNewGame)

@@ -174,9 +174,13 @@ namespace SpaceTrader.UI.Screens
             _systemName.text = GameData.SolarSystemNames[sys.NameIndex];
             _govText.text    = pol.Name;
             _techText.text   = GameData.TechLevelNames[sys.TechLevel];
-            _statusText.text = sys.Status > Uneventful
-                ? $"System is {GameData.StatusDescriptions[sys.Status]}"
-                : "";
+            string sysStatus = sys.Status > Uneventful
+                ? $"System is {GameData.StatusDescriptions[sys.Status]}" : "";
+            string autoNotice = G.ArrivalAutoNotice.TrimEnd();
+            G.ArrivalAutoNotice = "";
+            _statusText.text = string.IsNullOrEmpty(autoNotice) ? sysStatus
+                : string.IsNullOrEmpty(sysStatus) ? autoNotice
+                : $"{sysStatus}\n{autoNotice}";
 
             _creditsText.text = UIFactory.Cr(G.Credits);
             _daysText.text    = $"Day {G.Days}";
