@@ -224,11 +224,6 @@ namespace SpaceTrader.UI.Screens
             string toggleLabel = _showDifference ? "ABSOLUTE PRICES" : "PRICE DIFFERENCES";
             _toggleBtn.GetComponentInChildren<TextMeshProUGUI>().text = toggleLabel;
 
-            // Buying is only meaningful when the displayed system is the
-            // current system — otherwise StandardPrice is just an estimate
-            // and we don't have system stock to deduct from.
-            bool atTarget = (target == cur);
-
             for (int i = 0; i < MaxTradeItem; i++)
             {
                 // Average estimated price at target system (no random variance)
@@ -247,9 +242,10 @@ namespace SpaceTrader.UI.Screens
                     continue;
                 }
 
-                // Only allow buying at the current system, where G.BuyPrice
-                // is real and CargoSystem.BuyCargo can deduct stock.
-                _cells[i].Btn.interactable = atTarget && G.BuyPrice[i] > 0;
+                // Allow buying whenever the current system stocks this item.
+                // G.BuyPrice is always the real docked-system price regardless
+                // of which target system is shown for comparison.
+                _cells[i].Btn.interactable = G.BuyPrice[i] > 0;
                 if (_cells[i].Btn.interactable)
                     _cells[i].Btn.onClick.AddListener(() => OpenBuyDialog(idx));
 
