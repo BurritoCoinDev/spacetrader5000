@@ -1,0 +1,22 @@
+Ship sprites in this directory are derived from the Space Trader Windows
+port (SpaceTraderSource201) by Jay French and David Pierron, itself a
+port of the original Palm OS Space Trader by Pieter Spronck.
+
+Original source: https://www.spronck.net/spacetrader.html
+License: GNU General Public License v2 or later
+
+The bitmaps were converted from BMP to PNG and the original white
+background was alpha-keyed to transparent. No artistic changes were made.
+
+ship0.png  Flea           ship8.png  Termite
+ship1.png  Gnat           ship9.png  Wasp
+ship2.png  Firefly        ship10.png Space Monster
+ship3.png  Mosquito       ship11.png Dragonfly
+ship4.png  Bumblebee      ship12.png Mantis
+ship5.png  Beetle         ship13.png Scarab
+ship6.png  Hornet         ship14.png Bottle
+ship7.png  Grasshopper
+
+Because these sprites are GPLv2-licensed, any distributed build of this
+project that includes them must comply with GPLv2 (source available,
+same-license redistribution).

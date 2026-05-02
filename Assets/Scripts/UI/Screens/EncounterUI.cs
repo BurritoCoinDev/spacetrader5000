@@ -42,6 +42,47 @@ namespace SpaceTrader.UI.Screens
                ? ShipColors[type]
                : new Color(0.55f, 0.30f, 0.85f);
 
+        // Sprite cache so each combat round doesn't re-create Sprites.
+        static readonly Dictionary<int, Sprite> _spriteCache = new();
+
+        // Loads ship sprite at Assets/Resources/Ships/ship{type}.png. Tries
+        // Sprite first; if the asset was imported as plain Texture2D (the
+        // default when .meta files aren't checked in), creates a Sprite at
+        // runtime from the texture.
+        static Sprite LoadShipSprite(int type)
+        {
+            if (_spriteCache.TryGetValue(type, out var cached)) return cached;
+            Sprite sp = Resources.Load<Sprite>($"Ships/ship{type}");
+            if (sp == null)
+            {
+                var tex = Resources.Load<Texture2D>($"Ships/ship{type}");
+                if (tex != null)
+                {
+                    tex.filterMode = FilterMode.Point;  // crisp pixel art
+                    sp = Sprite.Create(tex, new Rect(0, 0, tex.width, tex.height),
+                                       new Vector2(0.5f, 0.5f), 100f);
+                }
+            }
+            _spriteCache[type] = sp;
+            return sp;
+        }
+
+        static void ApplyShipImage(Image img, int type)
+        {
+            var sp = LoadShipSprite(type);
+            if (sp != null)
+            {
+                img.sprite         = sp;
+                img.color          = Color.white;
+                img.preserveAspect = true;
+            }
+            else
+            {
+                img.sprite = null;
+                img.color  = ShipColor(type);
+            }
+        }
+
         // Combat state
         bool _playerFleeing;
         bool _oppFleeing;
@@ -145,7 +186,7 @@ namespace SpaceTrader.UI.Screens
 
             // Opponent card
             _oppNameText.text    = oppSt.Name;
-            _oppShipImg.color    = ShipColor(opp.Type);
+            ApplyShipImage(_oppShipImg, opp.Type);
             long oppHull    = opp.Hull;
             long oppMaxHull = oppSt.HullStrength;
             long oppShield  = EncounterSystem.TotalShieldStrength(opp);
@@ -154,7 +195,7 @@ namespace SpaceTrader.UI.Screens
 
             // Player card
             _playerNameText.text  = plySt.Name;
-            _playerShipImg.color  = ShipColor(G.Ship.Type);
+            ApplyShipImage(_playerShipImg, G.Ship.Type);
             long plyHull    = G.Ship.Hull;
             long plyMaxHull = ShipyardSystem.GetHullStrength();
             long plyShield  = EncounterSystem.TotalShieldStrength(G.Ship);
