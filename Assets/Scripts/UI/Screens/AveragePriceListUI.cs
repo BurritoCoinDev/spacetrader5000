@@ -133,13 +133,13 @@ namespace SpaceTrader.UI.Screens
 
                 var nameLbl = UIFactory.Label(rowGo.transform, "Name",
                     GameData.Tradeitems[i].Name,
-                    ColorTheme.FontSmall, ColorTheme.TextPrimary, TextAlignmentOptions.Left);
+                    ColorTheme.FontBody, ColorTheme.TextPrimary, TextAlignmentOptions.Left);
                 UIFactory.SetAnchored(nameLbl.rectTransform,
                     new Vector2(0, 0), new Vector2(0.55f, 1),
-                    new Vector2(4, 2), new Vector2(-2, -2));
+                    new Vector2(8, 2), new Vector2(-2, -2));
 
                 var priceLbl = UIFactory.Label(rowGo.transform, "Price", "---",
-                    ColorTheme.FontSmall, ColorTheme.TextPositive, TextAlignmentOptions.Right);
+                    ColorTheme.FontBody, ColorTheme.TextPositive, TextAlignmentOptions.Right);
                 UIFactory.SetAnchored(priceLbl.rectTransform,
                     new Vector2(0.55f, 0), new Vector2(1, 1),
                     new Vector2(2, 2), new Vector2(-4, -2));
