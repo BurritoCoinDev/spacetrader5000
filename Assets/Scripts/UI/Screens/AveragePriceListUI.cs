@@ -21,7 +21,7 @@ namespace SpaceTrader.UI.Screens
             public Button          Btn;
         }
 
-        TextMeshProUGUI _sysName, _resourceText, _bayText, _warpError;
+        TextMeshProUGUI _sysName, _resourceText, _bayText;
         Button _toggleBtn, _prevBtn, _nextBtn;
         bool _showDifference;
 
@@ -70,40 +70,35 @@ namespace SpaceTrader.UI.Screens
             BuildItemGrid(panel);
 
             // ── Bottom strip ──────────────────────────────────────────────────
-            // Cargo bays info
+            // Bay info row — sits just below the item grid, no overlap
             _bayText = UIFactory.Label(panel.transform, "Bays", "",
                 ColorTheme.FontSmall, ColorTheme.TextSecondary, TextAlignmentOptions.Right);
             UIFactory.SetAnchored(_bayText.rectTransform,
-                new Vector2(0.55f, 0.31f), new Vector2(0.97f, 0.37f), Vector2.zero, Vector2.zero);
+                new Vector2(0.03f, 0.34f), new Vector2(0.97f, 0.39f), Vector2.zero, Vector2.zero);
 
             // Toggle button (Absolute Prices ↔ Price Differences)
             _toggleBtn = UIFactory.Btn(panel.transform, "Toggle", "PRICE DIFFERENCES",
                 OnToggle, ColorTheme.ButtonNormal, ColorTheme.FontButton);
             UIFactory.SetAnchored(_toggleBtn.GetComponent<RectTransform>(),
-                new Vector2(0.03f, 0.23f), new Vector2(0.60f, 0.34f), Vector2.zero, Vector2.zero);
+                new Vector2(0.03f, 0.23f), new Vector2(0.57f, 0.33f), Vector2.zero, Vector2.zero);
 
             var sysInfoBtn = UIFactory.Btn(panel.transform, "SysInfo", "SYSTEM INFORMATION",
                 () => UIManager.Instance.Navigate(GameScreen.SystemInfo),
                 ColorTheme.ButtonNormal, ColorTheme.FontButton);
             UIFactory.SetAnchored(sysInfoBtn.GetComponent<RectTransform>(),
-                new Vector2(0.03f, 0.12f), new Vector2(0.60f, 0.22f), Vector2.zero, Vector2.zero);
+                new Vector2(0.03f, 0.12f), new Vector2(0.57f, 0.22f), Vector2.zero, Vector2.zero);
 
             var srcBtn = UIFactory.Btn(panel.transform, "ShortChart", "SHORT RANGE CHART",
                 () => UIManager.Instance.Navigate(GameScreen.ShortRangeChart),
                 ColorTheme.ButtonNormal, ColorTheme.FontButton);
             UIFactory.SetAnchored(srcBtn.GetComponent<RectTransform>(),
-                new Vector2(0.03f, 0.02f), new Vector2(0.60f, 0.11f), Vector2.zero, Vector2.zero);
-
-            _warpError = UIFactory.LabelWrap(panel.transform, "WarpErr", "",
-                ColorTheme.FontSmall, ColorTheme.TextNegative, TextAlignmentOptions.Center);
-            UIFactory.SetAnchored(_warpError.rectTransform,
-                new Vector2(0.62f, 0.35f), new Vector2(0.98f, 0.42f), Vector2.zero, Vector2.zero);
+                new Vector2(0.03f, 0.02f), new Vector2(0.57f, 0.11f), Vector2.zero, Vector2.zero);
 
             var warpBtn = UIFactory.Btn(panel.transform, "Warp", "WARP",
                 OnWarpDirect,
                 ColorTheme.ButtonSuccess, ColorTheme.FontButton);
             UIFactory.SetAnchored(warpBtn.GetComponent<RectTransform>(),
-                new Vector2(0.64f, 0.02f), new Vector2(0.97f, 0.34f), Vector2.zero, Vector2.zero);
+                new Vector2(0.60f, 0.02f), new Vector2(0.97f, 0.33f), Vector2.zero, Vector2.zero);
 
             // ── Buy dialog (starts hidden) ────────────────────────────────────
             BuildBuyDialog(panel);
@@ -189,7 +184,6 @@ namespace SpaceTrader.UI.Screens
         public void OnShow()
         {
             _buyDialog.SetActive(false);
-            _warpError.text = "";
             RefreshPrices();
         }
 
@@ -219,7 +213,8 @@ namespace SpaceTrader.UI.Screens
                 ? GameData.SpecialResources[sys.SpecialResources]
                 : "Special resources unknown";
 
-            _bayText.text = $"Bays: {CargoSystem.FilledCargoBays()}/{CargoSystem.TotalCargoBays()}";
+            _bayText.color = ColorTheme.TextSecondary;
+            _bayText.text  = $"Bays: {CargoSystem.FilledCargoBays()}/{CargoSystem.TotalCargoBays()}";
 
             string toggleLabel = _showDifference ? "ABSOLUTE PRICES" : "PRICE DIFFERENCES";
             _toggleBtn.GetComponentInChildren<TextMeshProUGUI>().text = toggleLabel;
@@ -305,29 +300,23 @@ namespace SpaceTrader.UI.Screens
 
         void OnWarpDirect()
         {
-            _warpError.text = "";
             var result = TravelerSystem.DoWarp(false);
-            switch (result)
+            if (result == TravelerSystem.WarpResult.Success)
             {
-                case TravelerSystem.WarpResult.Success:
-                    UIManager.Instance.Navigate(GameScreen.Travel);
-                    break;
-                case TravelerSystem.WarpResult.DebtTooLarge:
-                    _warpError.text = "Cannot warp — debt too large!";
-                    break;
-                case TravelerSystem.WarpResult.CantPayMercenaries:
-                    _warpError.text = "Cannot pay crew!";
-                    break;
-                case TravelerSystem.WarpResult.CantPayInsurance:
-                    _warpError.text = "Cannot pay insurance!";
-                    break;
-                case TravelerSystem.WarpResult.CantPayWormholeTax:
-                    _warpError.text = "Cannot pay wormhole toll!";
-                    break;
-                case TravelerSystem.WarpResult.WildNeedsWeapon:
-                    _warpError.text = "Wild requires a beam laser!";
-                    break;
+                UIManager.Instance.Navigate(GameScreen.Travel);
+                return;
             }
+            // Show warp error in the bay text row (RefreshPrices will restore it next visit)
+            _bayText.color = ColorTheme.TextNegative;
+            _bayText.text  = result switch
+            {
+                TravelerSystem.WarpResult.DebtTooLarge        => "Cannot warp — debt too large!",
+                TravelerSystem.WarpResult.CantPayMercenaries  => "Cannot pay crew!",
+                TravelerSystem.WarpResult.CantPayInsurance    => "Cannot pay insurance!",
+                TravelerSystem.WarpResult.CantPayWormholeTax  => "Cannot pay wormhole toll!",
+                TravelerSystem.WarpResult.WildNeedsWeapon     => "Wild requires a beam laser!",
+                _                                             => "Cannot warp.",
+            };
         }
 
         void OnToggle()
