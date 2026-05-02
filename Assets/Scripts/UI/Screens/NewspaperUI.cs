@@ -81,13 +81,11 @@ namespace SpaceTrader.UI.Screens
                 ShowHeadlines();
             else
             {
-                var msg = UIFactory.LabelWrap(_listContent, "Prompt",
+                var row = UIFactory.RowPanel(_listContent, "Prompt", ColorTheme.RowBg, 120);
+                var msg = UIFactory.LabelWrap(row.transform, "PromptText",
                     "Purchase this system's newspaper to read today's headlines.",
                     ColorTheme.FontSmall, ColorTheme.TextSecondary, TextAlignmentOptions.Center);
-                var rt = msg.rectTransform;
-                rt.anchorMin = Vector2.zero; rt.anchorMax = new Vector2(1, 0);
-                rt.pivot     = new Vector2(0.5f, 0);
-                rt.sizeDelta = new Vector2(0, 200);
+                UIFactory.Stretch(msg.rectTransform, 12, 12, 8, 8);
             }
         }
 
@@ -107,19 +105,14 @@ namespace SpaceTrader.UI.Screens
             var headlines = NewsSystem.GetHeadlines();
             for (int i = 0; i < headlines.Count; i++)
             {
+                // Use fixed height per headline row — 110px fits 2-3 lines at FontSmall
                 var row = UIFactory.RowPanel(_listContent, $"Story{i}",
-                    i % 2 == 0 ? ColorTheme.RowBg : ColorTheme.RowAlt, 0);
+                    i % 2 == 0 ? ColorTheme.RowBg : ColorTheme.RowAlt, 110);
 
                 var lbl = UIFactory.LabelWrap(row.transform, "Text", headlines[i],
                     ColorTheme.FontSmall, i == 0 ? ColorTheme.TextPrimary : ColorTheme.TextSecondary,
                     TextAlignmentOptions.Left);
                 UIFactory.Stretch(lbl.rectTransform, 12, 12, 8, 8);
-
-                // Make row auto-size to its text
-                var le = row.AddComponent<UnityEngine.UI.LayoutElement>();
-                le.minHeight       = 60;
-                le.preferredHeight = -1;
-                le.flexibleHeight  = 1;
             }
         }
 

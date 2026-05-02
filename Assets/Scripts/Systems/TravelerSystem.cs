@@ -263,10 +263,10 @@ namespace SpaceTrader
                 else if (G.ReactorStatus == 0)
                 {
                     // Tribbles eat available food and breed proportionally
-                    int foodAte = Min(G.Ship.Tribbles / 250, G.Ship.Cargo[Food]);
+                    int foodAte = (int)Min(G.Ship.Tribbles / 250, (long)G.Ship.Cargo[Food]);
                     G.Ship.Cargo[Food] -= foodAte;
                     G.Ship.Tribbles += G.Ship.Tribbles / 50 + 2 * foodAte
-                        + GetRandom(G.Ship.Tribbles / 100 + 1);
+                        + GetRandom((int)Min(G.Ship.Tribbles / 100 + 1, int.MaxValue));
 
                     // Narcotics cause explosive breeding (one unit consumed)
                     if (G.Ship.Cargo[Narcotics] > 0)
