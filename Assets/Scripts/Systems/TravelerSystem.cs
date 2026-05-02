@@ -332,9 +332,9 @@ namespace SpaceTrader
             }
 
             bool isWormholeTrip = WormholeExists(curSys, G.WarpSystem) || viaSingularity;
-            G.Clicks = isWormholeTrip
-                ? WormholeDistance
-                : (int)RealDistance(G.SolarSystem[G.Commander.CurSystem], G.SolarSystem[G.WarpSystem]);
+            // Original Traveler.c: Clicks = 21 for all non-wormhole trips so
+            // encounter rolls happen consistently regardless of distance.
+            G.Clicks = isWormholeTrip ? WormholeDistance : 21;
             G.Raided         = false;
             G.Inspected      = false;
             G.LitterWarning  = false;

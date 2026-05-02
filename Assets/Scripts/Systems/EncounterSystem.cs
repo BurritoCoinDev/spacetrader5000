@@ -241,6 +241,40 @@ namespace SpaceTrader
         {
             if (!G.EscapePod) return;
 
+            // Order mirrors original Encounter.c EscapeWithPod():
+            // arrive at destination first, then process quest/state cleanup.
+            if (G.ScarabStatus == 3) G.ScarabStatus = 0;
+
+            G.Commander.CurSystem = G.WarpSystem;
+            TravelerSystem.Arrival();
+
+            // Reactor melts down if it was on the pod
+            if (G.ReactorStatus > 0 && G.ReactorStatus < 21) G.ReactorStatus = 0;
+            // Antidote is destroyed
+            if (G.JaporiDiseaseStatus == 1) G.JaporiDiseaseStatus = 0;
+            // Artifact is lost
+            if (G.ArtifactOnBoard) G.ArtifactOnBoard = false;
+            // Jarek is taken home
+            if (G.JarekStatus == 1) G.JarekStatus = 0;
+            // Wild is arrested — police record penalty
+            if (G.WildStatus == 1)
+            {
+                G.PoliceRecordScore += CaughtWithWildScore;
+                G.WildStatus = 0;
+            }
+            // Tribbles don't survive the pod
+            if (G.Ship.Tribbles > 0) G.Ship.Tribbles = 0;
+
+            // Insurance pays out the previous ship value before we replace it
+            long insurancePayout = 0;
+            if (G.Insurance)
+            {
+                insurancePayout = ShipPriceSystem.CurrentShipPriceWithoutCargo(true);
+                G.Insurance = false;
+            }
+
+            // Replace with a fresh Flea — wipes cargo, weapons, shields, gadgets,
+            // mercenaries, and any per-cargo running-average buying price.
             var newShip = new Ship
             {
                 Type = 0,
@@ -252,23 +286,26 @@ namespace SpaceTrader
             for (int i = 0; i < MaxGadget; i++)  newShip.Gadget[i]  = -1;
             for (int i = 0; i < MaxCrew; i++)    newShip.Crew[i]    = -1;
             newShip.Crew[0] = 0;
+            for (int i = 0; i < MaxTradeItem; i++) G.BuyingPrice[i] = 0;
 
             G.Ship      = newShip;
             G.EscapePod = false;
             G.NoClaim   = 0;
+            G.Credits  += insurancePayout;
 
-            if (G.Insurance)
+            // Cost of the new Flea: 500 credits, or whatever's left + debt
+            if (G.Credits > 500)
             {
-                G.Credits   += ShipPriceSystem.CurrentShipPriceWithoutCargo(true);
-                G.Insurance  = false;
+                G.Credits -= 500;
             }
             else
             {
-                G.Insurance = false;
+                G.Debt   += 500 - G.Credits;
+                G.Credits = 0;
             }
 
-            G.Commander.CurSystem = G.WarpSystem;
-            TravelerSystem.Arrival();
+            // Building the new ship takes 3 days
+            TravelerSystem.IncDays(3);
         }
 
         public static int DetermineEncounter()
@@ -276,7 +313,9 @@ namespace SpaceTrader
             int sys = G.WarpSystem;
             var pol = GameData.PoliticsTypes[G.SolarSystem[sys].Politics];
 
-            if (GetRandom(1000) < G.ChanceOfVeryRareEncounter)
+            // Day-10 guard mirrors original Traveler.c — very rare encounters
+            // shouldn't surprise the player on the first few warps.
+            if (G.Days > 10 && GetRandom(1000) < G.ChanceOfVeryRareEncounter)
             {
                 int vr = GetRandom(MaxVeryRareEncounter);
                 if (vr == MarieCeleste  && (G.VeryRareEncounter & AlreadyMarie) == 0)

@@ -31,8 +31,11 @@ namespace SpaceTrader
         public static int GetAmountToBuy(int index)
         {
             if (G.BuyPrice[index] <= 0) return 0;
-            int byMoney = G.Credits >= G.BuyPrice[index]
-                ? (int)(G.Credits / G.BuyPrice[index]) : 0;
+            // ToSpend honors the player's reserve-money setting (insurance +
+            // mercenary pay) — using raw Credits would silently ignore it.
+            long spendable = MoneySystem.ToSpend();
+            int byMoney = spendable >= G.BuyPrice[index]
+                ? (int)(spendable / G.BuyPrice[index]) : 0;
             int bySpace  = GameMath.Max(0, FreeCargoBays() - G.LeaveEmpty);
             int byStock  = G.SolarSystem[G.Commander.CurSystem].Qty[index];
             return GameMath.Min(GameMath.Min(byMoney, bySpace), byStock);

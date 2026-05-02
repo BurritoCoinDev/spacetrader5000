@@ -271,7 +271,7 @@ namespace SpaceTrader.UI.Screens
             => enc == PoliceAttack || EncounterSystem.IsPirate(enc)
             || EncounterSystem.IsSpaceMonster(enc) || EncounterSystem.IsDragonfly(enc)
             || EncounterSystem.IsScarab(enc) || enc == FamousCaptAttack
-            || enc == TraderAttack;
+            || enc == TraderAttack || enc == Mantis;
 
         void OnAttack()
         {

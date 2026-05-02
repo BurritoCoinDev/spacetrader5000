@@ -281,9 +281,23 @@ namespace SpaceTrader.UI.Screens
             for (int i = 0; i < MaxTradeItem; i++)
             {
                 int max = CargoSystem.GetAmountToBuy(i);
-                if (max > 0) CargoSystem.BuyCargo(i, max);
+                if (max > 0)
+                {
+                    CargoSystem.BuyCargo(i, max);
+                    // Track per-row pending so UNDO/CLEAR can reverse it
+                    _rows[i].PendingQty[0] += max;
+                }
             }
-            Refresh();
+            // Re-render readouts without resetting PendingQty (Refresh() does)
+            var G = GameState.Instance;
+            _creditsText.text = UIFactory.Cr(G.Credits);
+            _baysText.text    = $"Bays: {CargoSystem.FreeCargoBays()}/{CargoSystem.TotalCargoBays()}";
+            for (int i = 0; i < MaxTradeItem; i++)
+            {
+                _rows[i].QtyLabel.text = _rows[i].PendingQty[0].ToString();
+                _rows[i].Held.text     = G.Ship.Cargo[i].ToString();
+                _rows[i].Avail.text    = G.CurrentSystem.Qty[i].ToString();
+            }
         }
 
         void OnClear()
