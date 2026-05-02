@@ -392,9 +392,7 @@ namespace SpaceTrader.UI.Screens
                 : $"The {oppName} missed you.";
 
             RefreshStatus();
-            ShowResult(
-                $"{hitLine}\nThe {oppName} is still following you.\nYour opponent attacks.",
-                () => { BuildActions(); RefreshStatus(); });
+            _descText.text = $"{hitLine}\nThe {oppName} is still following you.\nYour opponent attacks.";
         }
 
         void OnYield()
