@@ -216,6 +216,7 @@ namespace SpaceTrader.UI.Screens
 
         void RefreshStatus()
         {
+            if (_traderDialog != null) _traderDialog.SetActive(false);
             var G   = GameState.Instance;
             var opp = G.Opponent;
             var oppSt = GameData.Shiptypes[opp.Type];
@@ -679,6 +680,7 @@ namespace SpaceTrader.UI.Screens
 
         void ShowResult(string message, System.Action onOK)
         {
+            if (_traderDialog != null) _traderDialog.SetActive(false);
             foreach (Transform child in _btnContainer) Destroy(child.gameObject);
             _actionBtns.Clear();
             _descText.text = message;

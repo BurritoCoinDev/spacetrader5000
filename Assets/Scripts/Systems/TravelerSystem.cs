@@ -253,7 +253,6 @@ namespace SpaceTrader
                 int fuelNeeded = FuelSystem.GetFuelTanks() - FuelSystem.GetFuel();
                 if (fuelNeeded > 0)
                 {
-                    long fuelCost = FuelSystem.FuelCostFor(fuelNeeded);
                     FuelSystem.BuyFuel(fuelNeeded);
                     if (G.Ship.Fuel < FuelSystem.GetFuelTanks())
                         G.ArrivalAutoNotice += "Auto-fuel: insufficient credits for full tank.\n";
