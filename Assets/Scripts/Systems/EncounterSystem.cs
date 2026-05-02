@@ -187,17 +187,16 @@ namespace SpaceTrader
             }
 
             opp.Hull = GameData.Shiptypes[opp.Type].HullStrength;
+            opp.Fuel = stype.FuelTanks;
 
-            // Pick a crew slot that is not currently in the player's crew to avoid
-            // overwriting hired mercenary stats.
-            int crewIdx;
-            do { crewIdx = 1 + GetRandom(MaxCrewMember - 1); }
-            while (System.Array.IndexOf(G.Ship.Crew, crewIdx) >= 0);
-            opp.Crew[0] = crewIdx;
-            G.Mercenary[crewIdx].Pilot    = SkillSystem.RandomSkill();
-            G.Mercenary[crewIdx].Fighter  = SkillSystem.RandomSkill();
-            G.Mercenary[crewIdx].Trader   = SkillSystem.RandomSkill();
-            G.Mercenary[crewIdx].Engineer = SkillSystem.RandomSkill();
+            // Always use the reserved famous-captain slot (MaxCrewMember) for
+            // opponent crew so we don't scramble a hireable merc's stats.
+            // Original Traveler.c uses the same slot for every opponent.
+            opp.Crew[0] = MaxCrewMember;
+            G.Mercenary[MaxCrewMember].Pilot    = SkillSystem.RandomSkill();
+            G.Mercenary[MaxCrewMember].Fighter  = SkillSystem.RandomSkill();
+            G.Mercenary[MaxCrewMember].Trader   = SkillSystem.RandomSkill();
+            G.Mercenary[MaxCrewMember].Engineer = SkillSystem.RandomSkill();
         }
 
         public static bool ExecuteAttack(Ship attacker, Ship defender, bool defenderFlees, bool commanderUnderAttack)
@@ -320,11 +319,13 @@ namespace SpaceTrader
                 int vr = GetRandom(MaxVeryRareEncounter);
                 if (vr == MarieCeleste  && (G.VeryRareEncounter & AlreadyMarie) == 0)
                     return G.EncounterType = MarieCelesteEncounter;
-                if (vr == CaptainAhab   && (G.VeryRareEncounter & AlreadyAhab) == 0 && G.PoliceRecordScore >= CleanScore)
+                // Famous captains snub criminals (record > CriminalScore=-10),
+                // not just clean records — port was too strict.
+                if (vr == CaptainAhab   && (G.VeryRareEncounter & AlreadyAhab) == 0 && G.PoliceRecordScore > CriminalScore)
                     return G.EncounterType = CaptainAhabEncounter;
-                if (vr == CaptainConrad && (G.VeryRareEncounter & AlreadyConrad) == 0 && G.PoliceRecordScore >= CleanScore)
+                if (vr == CaptainConrad && (G.VeryRareEncounter & AlreadyConrad) == 0 && G.PoliceRecordScore > CriminalScore)
                     return G.EncounterType = CaptainConradEncounter;
-                if (vr == CaptainHuie   && (G.VeryRareEncounter & AlreadyHuie) == 0 && G.PoliceRecordScore >= CleanScore)
+                if (vr == CaptainHuie   && (G.VeryRareEncounter & AlreadyHuie) == 0 && G.PoliceRecordScore > CriminalScore)
                     return G.EncounterType = CaptainHuieEncounter;
                 if (vr == BottleOld     && (G.VeryRareEncounter & AlreadyBottleOld) == 0)
                     return G.EncounterType = BottleOldEncounter;
@@ -332,34 +333,32 @@ namespace SpaceTrader
                     return G.EncounterType = BottleGoodEncounter;
             }
 
-            if (G.MonsterStatus == 1 && sys == AcamarSystem && GetRandom(100) < 85)
+            // Special encounters fire only at the final click(s) of the trip,
+            // not on every click — original Traveler.c gates these on Clicks==1
+            // (Monster/Dragonfly) or Clicks==20 (Scarab approach).
+            if (G.Clicks == 1 && G.MonsterStatus == 1 && sys == AcamarSystem && GetRandom(100) < 85)
             {
                 G.Opponent = G.SpaceMonster.Clone();
                 return G.EncounterType = SpaceMonsterAttack;
             }
 
-            // Dragonfly is pinned to a specific destination per quest stage
-            int dflySys = G.DragonflyStatus == 1 ? BaratasSystem
-                        : G.DragonflyStatus == 2 ? MelinaSystem
-                        : G.DragonflyStatus == 3 ? RegulasSystem
-                        : G.DragonflyStatus == 4 ? ZalkonSystem
-                        : -1;
-            if (dflySys >= 0 && sys == dflySys && GetRandom(100) < 85)
+            // Dragonfly trail — original only triggers combat at Zalkon at
+            // the last click of the approach. Earlier waypoints (Baratas /
+            // Melina / Regulas) are travel checkpoints, not combat.
+            if (G.Clicks == 1 && G.DragonflyStatus == 4 && sys == ZalkonSystem && GetRandom(100) < 85)
             {
                 G.Opponent = G.Dragonfly_Ship.Clone();
                 return G.EncounterType = DragonflyAttack;
             }
 
-            if (G.ScarabStatus == 1 && GetRandom(100) < 85)
+            // Scarab approach — gated on the destination system's
+            // ScarabDestroyed special, plus Clicks==20 and arrival via wormhole.
+            if (G.Clicks == 20 && G.ScarabStatus == 1
+                && G.SolarSystem[sys].Special == ScarabDestroyed
+                && G.ArrivedViaWormhole && GetRandom(100) < 85)
             {
                 G.Opponent = G.Scarab_Ship.Clone();
                 return G.EncounterType = ScarabAttack;
-            }
-
-            if (G.ArtifactOnBoard && GetRandom(100) < 30)
-            {
-                GenerateOpponent(Mantis);
-                return G.EncounterType = Mantis;
             }
 
             // Police — skip if already inspected and cleared this voyage
@@ -368,13 +367,14 @@ namespace SpaceTrader
                 GenerateOpponent(Police);
                 if (G.PoliceRecordScore < DubiousScore || G.WildStatus == 1)
                     return G.EncounterType = PoliceAttack;
-                // Mark immediately so a fled/attacked inspection isn't re-rolled
-                // on the next click of the same trip.
                 G.Inspected = true;
                 return G.EncounterType = PoliceInspection;
             }
 
-            if (pol.StrengthPirates > 0 && GetRandom(MaxPirate) < pol.StrengthPirates)
+            // Pirate roll — original skips pirates after a successful raid
+            // this trip and halves rate for the Flea.
+            int pirateRoll = G.Ship.Type == 0 ? MaxPirate * 2 : MaxPirate;
+            if (pol.StrengthPirates > 0 && !G.Raided && GetRandom(pirateRoll) < pol.StrengthPirates)
             {
                 GenerateOpponent(Pirate);
                 return G.EncounterType = PirateAttack;
@@ -384,6 +384,14 @@ namespace SpaceTrader
             {
                 GenerateOpponent(Trader);
                 return G.EncounterType = TraderIgnore;
+            }
+
+            // Mantis only fires when no regular encounter occurred. Matches
+            // original Traveler.c rate of GetRandom(20) <= 3 (~20%), not 30%.
+            if (G.ArtifactOnBoard && GetRandom(20) <= 3)
+            {
+                GenerateOpponent(Mantis);
+                return G.EncounterType = Mantis;
             }
 
             return -1;
