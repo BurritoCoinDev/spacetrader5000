@@ -28,13 +28,16 @@ namespace SpaceTrader.UI.Screens
 
             // Name row
             var nameLabel = UIFactory.Label(panel.transform, "NameLbl",
-                "Commander Name:", ColorTheme.FontBody, ColorTheme.TextSecondary);
+                "Commander Name:", ColorTheme.FontHeader, ColorTheme.TextSecondary);
             UIFactory.SetAnchored(nameLabel.rectTransform,
                 new Vector2(0.05f, 0.83f), new Vector2(0.50f, 0.88f), Vector2.zero, Vector2.zero);
 
             _nameInput = UIFactory.InputField(panel.transform, "NameInput", "Jameson");
             UIFactory.SetAnchored(_nameInput.GetComponent<RectTransform>(),
                 new Vector2(0.05f, 0.76f), new Vector2(0.95f, 0.83f), Vector2.zero, Vector2.zero);
+            // Bump the input field's typed and placeholder text sizes too.
+            _nameInput.textComponent.fontSize = ColorTheme.FontHeader;
+            ((TextMeshProUGUI)_nameInput.placeholder).fontSize = ColorTheme.FontHeader;
 
             // Difficulty row
             var diffRow = UIFactory.TransparentPanel(panel.transform, "DiffRow");
@@ -42,13 +45,13 @@ namespace SpaceTrader.UI.Screens
                 new Vector2(0.05f, 0.68f), new Vector2(0.95f, 0.75f), Vector2.zero, Vector2.zero);
 
             var dLbl = UIFactory.Label(diffRow.transform, "DiffLbl",
-                "Difficulty:", ColorTheme.FontBody, ColorTheme.TextSecondary);
-            UIFactory.Pin(dLbl.rectTransform, TextAnchor.MiddleLeft, 200, 50);
+                "Difficulty:", ColorTheme.FontHeader, ColorTheme.TextSecondary);
+            UIFactory.Pin(dLbl.rectTransform, TextAnchor.MiddleLeft, 240, 60);
 
             _diffLabel = UIFactory.Label(diffRow.transform, "DiffVal",
                 GameData.DifficultyLevel[_difficulty],
-                ColorTheme.FontBody, ColorTheme.TextAccent);
-            UIFactory.Pin(_diffLabel.rectTransform, TextAnchor.MiddleCenter, 200, 50);
+                ColorTheme.FontHeader, ColorTheme.TextAccent);
+            UIFactory.Pin(_diffLabel.rectTransform, TextAnchor.MiddleCenter, 240, 60);
 
             var decDiff = UIFactory.SmallBtn(diffRow.transform, "DiffDec", "<",
                 () => ChangeDifficulty(-1));
@@ -60,14 +63,14 @@ namespace SpaceTrader.UI.Screens
 
             // Skill allocation
             var skillHeader = UIFactory.Label(panel.transform, "SkillHdr",
-                "SKILL POINTS", ColorTheme.FontBody, ColorTheme.TextAccent,
+                "SKILL POINTS", ColorTheme.FontHeader, ColorTheme.TextAccent,
                 TextAlignmentOptions.Center);
             UIFactory.SetAnchored(skillHeader.rectTransform,
                 new Vector2(0.05f, 0.61f), new Vector2(0.95f, 0.67f), Vector2.zero, Vector2.zero);
 
             _remainLabel = UIFactory.Label(panel.transform, "RemainLbl",
                 "Remaining: 0",
-                ColorTheme.FontBody, ColorTheme.TextPositive, TextAlignmentOptions.Center);
+                ColorTheme.FontHeader, ColorTheme.TextPositive, TextAlignmentOptions.Center);
             UIFactory.SetAnchored(_remainLabel.rectTransform,
                 new Vector2(0.05f, 0.55f), new Vector2(0.95f, 0.61f), Vector2.zero, Vector2.zero);
 
@@ -82,8 +85,8 @@ namespace SpaceTrader.UI.Screens
                     new Vector2(0.05f, y1), new Vector2(0.95f, y2), Vector2.zero, Vector2.zero);
 
                 var sLbl = UIFactory.Label(row.transform, "Name", SkillNames[i],
-                    ColorTheme.FontBody, ColorTheme.TextPrimary);
-                UIFactory.Pin(sLbl.rectTransform, TextAnchor.MiddleLeft, 200, 60);
+                    ColorTheme.FontHeader, ColorTheme.TextPrimary);
+                UIFactory.Pin(sLbl.rectTransform, TextAnchor.MiddleLeft, 240, 70);
 
                 var decBtn = UIFactory.SmallBtn(row.transform, "Dec", "-",
                     () => ChangeSkill(idx, -1));
