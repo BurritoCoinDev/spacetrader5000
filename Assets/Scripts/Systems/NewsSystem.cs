@@ -13,7 +13,10 @@ namespace SpaceTrader
 
         // Cost to buy the paper at the current system.
         public static long NewspaperPrice()
-            => Math.Min((G.CurrentSystem.TechLevel + 1) * 2L, 5L);
+        {
+            long price = (G.CurrentSystem.TechLevel + 1) * 2L;
+            return price > 5L ? 5L : price;
+        }
 
         // Newspaper-style headline for each non-Uneventful system status.
         // {0} is replaced with the system name.
