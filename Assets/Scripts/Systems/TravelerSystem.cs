@@ -239,11 +239,10 @@ namespace SpaceTrader
             if (G.JarekStatus == 1 && G.WarpSystem == DaledSystem)
                 G.JarekStatus = 2;
 
-            if (G.ReactorStatus > 0 && G.ReactorStatus < 21 && G.WarpSystem == NixSystem)
-            {
-                G.Credits       += 1500L * (G.Difficulty + 1);
-                G.ReactorStatus  = -1; // -1 = delivered, unlocks ReactorDelivered event
-            }
+            // Reactor delivery itself happens via the ReactorDelivered
+            // SpecialEvent handler at Nix (which sets status = 21 and queues
+            // the GetSpecialLaser pickup). Arrival shouldn't grant a separate
+            // credit reward — that was double-paying for one quest leg.
 
             ShuffleStatus();
             DeterminePrices(G.WarpSystem);
@@ -471,23 +470,109 @@ namespace SpaceTrader
 
         static void PlaceSpecialEvents()
         {
-            G.SolarSystem[ZalkonSystem].Special    = DragonflyDestroyed; // Dragonfly was heading to Zalkon
+            // Fixed-system placements
+            G.SolarSystem[ZalkonSystem].Special    = DragonflyDestroyed;
             G.SolarSystem[BaratasSystem].Special   = FlyBaratas;
             G.SolarSystem[MelinaSystem].Special    = FlyMelina;
             G.SolarSystem[RegulasSystem].Special   = FlyRegulas;
-            G.SolarSystem[AcamarSystem].Special    = MonsterKilled;      // Monster originated at Acamar
+            G.SolarSystem[AcamarSystem].Special    = MonsterKilled;
             G.SolarSystem[JaporiSystem].Special    = MedicineDelivery;
             G.SolarSystem[UtopiaSystem].Special    = MoonBoughtEvent;
+            G.SolarSystem[DaledSystem].Special     = JarekGetsOut;
+            G.SolarSystem[KravatSystem].Special    = WildGetsOut;
 
-            for (int i = EndFixed; i < MaxSpecialEvent; i++)
+            // Pick a wormhole endpoint for Scarab (skip Gemulon/Daled/Nix
+            // which already have or will have specials; if all wormholes
+            // taken, mark the Scarab event as unavailable).
+            bool freeWormhole = false;
+            int tries = 0;
+            int wIdx  = GetRandom(MaxWormhole);
+            while (tries < 20)
             {
-                int tries = 0;
-                while (tries < 100)
+                int sys = G.Wormhole[wIdx];
+                if (G.SolarSystem[sys].Special < 0
+                    && sys != GemulonSystem && sys != DaledSystem && sys != NixSystem)
                 {
-                    tries++;
-                    int s = GetRandom(MaxSolarSystem);
+                    G.SolarSystem[sys].Special = ScarabDestroyed;
+                    freeWormhole = true;
+                    break;
+                }
+                wIdx = GetRandom(MaxWormhole);
+                tries++;
+            }
+
+            // GetReactor goes to a system >= 70 parsecs from Nix; Nix gets
+            // ReactorDelivered. Both are required for the Reactor quest.
+            int target = -1; long bestDist = 999;
+            for (int i = 0; i < MaxSolarSystem; i++)
+            {
+                long d = GameMath.RealDistance(G.SolarSystem[NixSystem], G.SolarSystem[i]);
+                if (d >= 70 && d < bestDist && G.SolarSystem[i].Special < 0
+                    && i != GemulonSystem && i != DaledSystem)
+                { target = i; bestDist = d; }
+            }
+            if (target >= 0)
+            {
+                G.SolarSystem[target].Special     = GetReactor;
+                G.SolarSystem[NixSystem].Special  = ReactorDelivered;
+            }
+
+            // ArtifactDelivery: any hi-tech (>= MaxTechLevel-1) non-Gemulon/Daled.
+            int probe = 0;
+            while (probe < MaxSolarSystem)
+            {
+                int s = 1 + GetRandom(MaxSolarSystem - 1);
+                if (G.SolarSystem[s].Special < 0
+                    && G.SolarSystem[s].TechLevel >= MaxTechLevel - 1
+                    && s != GemulonSystem && s != DaledSystem)
+                {
+                    G.SolarSystem[s].Special = ArtifactDelivery;
+                    break;
+                }
+                probe++;
+            }
+
+            // AlienInvasion at a system >= 70 from Gemulon; Gemulon gets rescue.
+            target = -1; bestDist = 999;
+            for (int i = 0; i < MaxSolarSystem; i++)
+            {
+                long d = GameMath.RealDistance(G.SolarSystem[GemulonSystem], G.SolarSystem[i]);
+                if (d >= 70 && d < bestDist && G.SolarSystem[i].Special < 0
+                    && i != DaledSystem && i != GemulonSystem)
+                { target = i; bestDist = d; }
+            }
+            if (target >= 0)
+            {
+                G.SolarSystem[target].Special = AlienInvasion;
+                G.SolarSystem[GemulonSystem].Special = GemulonRescued;
+            }
+
+            // Experiment: a system >= 70 from Daled; Daled gets ExperimentStopped.
+            target = -1; bestDist = 999;
+            for (int i = 0; i < MaxSolarSystem; i++)
+            {
+                long d = GameMath.RealDistance(G.SolarSystem[DaledSystem], G.SolarSystem[i]);
+                if (d >= 70 && d < bestDist && G.SolarSystem[i].Special < 0)
+                { target = i; bestDist = d; }
+            }
+            if (target >= 0)
+            {
+                G.SolarSystem[target].Special           = Experiment;
+                G.SolarSystem[DaledSystem].Special      = ExperimentStopped;
+            }
+
+            // Scatter the remaining non-fixed events at random unspecial systems.
+            // Skip Scarab if no free wormhole was found above.
+            for (int i = MoonForSale; i < MaxSpecialEvent - EndFixed; i++)
+            {
+                if (i == Scarab && !freeWormhole) continue;
+                int retries = 0;
+                while (retries < 100)
+                {
+                    int s = 1 + GetRandom(MaxSolarSystem - 1);
                     if (G.SolarSystem[s].Special < 0)
                     { G.SolarSystem[s].Special = i; break; }
+                    retries++;
                 }
             }
         }

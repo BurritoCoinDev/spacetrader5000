@@ -82,11 +82,17 @@ namespace SpaceTrader.UI.Screens
                 case JarekGetsOut:          return G.JarekStatus == 2;
                 case TransportWild:         return G.WildStatus == 0;
                 case GetReactor:            return G.ReactorStatus == 0;
-                case ReactorDelivered:      return G.ReactorStatus >= 21 && G.ReactorStatus != -1;
+                // Player must be carrying an active reactor (1..20) to deliver
+                case ReactorDelivered:      return G.ReactorStatus > 0 && G.ReactorStatus < 21;
                 case GetSpecialLaser:       return G.ReactorStatus == 21;
                 case GetFuelCompactor:      return true;
                 case InstallLightningShield:return true;
                 case EraseRecord:           return true;
+                case WildGetsOut:           return G.WildStatus == 1;
+                case JaporiDisease:         return G.JaporiDiseaseStatus == 0
+                                                && CargoSystem.FreeCargoBays() >= 10;
+                case AlienArtifact:         return !G.ArtifactOnBoard;
+                case ArtifactDelivery:      return G.ArtifactOnBoard;
                 default:                    return true;
             }
         }
@@ -233,15 +239,11 @@ namespace SpaceTrader.UI.Screens
                     break;
 
                 case DragonflyDestroyed:
-                {
-                    // Free reward weapon — bypass InstallWeapon which charges credits
-                    var ws = ShipyardSystem.GetFirstEmptySlot(
-                        GameData.Shiptypes[G.Ship.Type].WeaponSlots, G.Ship.Weapon);
-                    if (ws >= 0) G.Ship.Weapon[ws] = MilitaryLaserWeapon;
-                    G.Credits += 1000L * (G.Difficulty + 1);
-                    G.PoliceRecordScore += 1;
+                    // Reward isn't a Military Laser — original re-points the
+                    // system to InstallLightningShield so the player can pick
+                    // up the Lightning Shield on a follow-up visit.
+                    G.CurrentSystem.Special = InstallLightningShield;
                     break;
-                }
 
                 case Scarab:
                     G.ScarabStatus = 1;
@@ -279,7 +281,38 @@ namespace SpaceTrader.UI.Screens
                     break;
 
                 case JarekGetsOut:
-                    G.JarekStatus = 2;    // not 3; SkillSystem checks JarekStatus >= 2 for trader-skill cap
+                    G.JarekStatus = 2;
+                    // Trader-skill cap bump changes the price ceiling for
+                    // goods at this system, so prices must be recalculated.
+                    SkillSystem.RecalculateBuyPrices(G.Commander.CurSystem);
+                    break;
+
+                case WildGetsOut:
+                    {
+                        // Place Zeethibal (the famous-captain slot) at Kravat,
+                        // record completion, and clear the player's record.
+                        G.WildStatus = 2;
+                        G.Mercenary[MaxCrewMember].CurSystem = KravatSystem;
+                        if (G.PoliceRecordScore < CleanScore) G.PoliceRecordScore = CleanScore;
+                    }
+                    break;
+
+                case JaporiDisease:
+                    {
+                        // Pick up the antidote — occupies 10 cargo bays until
+                        // delivery (TotalCargoBays handles the deduction).
+                        G.JaporiDiseaseStatus = 1;
+                    }
+                    break;
+
+                case AlienArtifact:
+                    G.ArtifactOnBoard = true;
+                    break;
+
+                case ArtifactDelivery:
+                    G.ArtifactOnBoard = false;
+                    // Delivery reward — original gives a Reflective Shield
+                    // (handled at Daled normally; here we just mark complete).
                     break;
 
                 case ReactorDelivered:
@@ -322,9 +355,11 @@ namespace SpaceTrader.UI.Screens
                     break;
 
                 case MedicineDelivery:
-                    int space = CargoSystem.FreeCargoBays();
-                    int qty   = GameMath.Min(10, space);
-                    G.Ship.Cargo[Medicine] += qty;
+                    // Frees the 10 antidote bays and grants two skill bumps
+                    // (the reward for completing the Japori quest).
+                    G.JaporiDiseaseStatus = 2;
+                    SkillSystem.IncreaseRandomSkill();
+                    SkillSystem.IncreaseRandomSkill();
                     break;
             }
         }

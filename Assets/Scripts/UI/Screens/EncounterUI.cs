@@ -479,7 +479,9 @@ namespace SpaceTrader.UI.Screens
             {
                 G.VeryRareEncounter |= AlreadyBottleGood;
                 SkillSystem.IncreaseRandomSkill();
-                ShowResult("The bottle of Eden improved a skill!", () => ReturnToTravel());
+                // Easy/Normal get a second skill bump (Hard/Impossible only one).
+                if (G.Difficulty < Hard) SkillSystem.IncreaseRandomSkill();
+                ShowResult("The bottle of Eden improved your skills!", () => ReturnToTravel());
             }
         }
 
