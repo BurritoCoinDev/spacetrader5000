@@ -85,7 +85,17 @@ namespace SpaceTrader.UI.Screens
         void OnContinue()
         {
             if (!SaveSystem.SaveExists()) return;
-            SaveSystem.Load();
+            // If the load fails (corrupt save, version mismatch), don't push
+            // into Docked with whatever default-Reset state we ended up with —
+            // DockedUI.OnShow would auto-save and overwrite the corrupt file
+            // with that default state, silently destroying any salvageable
+            // bytes. Drop the bad save instead.
+            if (!SaveSystem.Load())
+            {
+                SaveSystem.DeleteSave();
+                _continueBtn.interactable = false;
+                return;
+            }
             UIManager.Instance.Navigate(GameScreen.Docked);
         }
 

@@ -13,6 +13,7 @@ namespace SpaceTrader.UI.Screens
     {
         TMP_InputField _nameInput;
         TextMeshProUGUI _diffLabel, _remainLabel;
+        UnityEngine.UI.Button _startBtn;
         TextMeshProUGUI[] _skillLabels = new TextMeshProUGUI[4];
         int[] _skills = new int[4]; // pilot, fighter, trader, engineer
         int _difficulty = Normal;
@@ -97,11 +98,11 @@ namespace SpaceTrader.UI.Screens
                 UIFactory.Pin(incBtn.GetComponent<RectTransform>(), TextAnchor.MiddleRight, 70, 60, -20, 0);
             }
 
-            // Start button
-            var startBtn = UIFactory.Btn(panel.transform, "StartBtn",
+            // Start button — interactable only once all skill points are spent
+            _startBtn = UIFactory.Btn(panel.transform, "StartBtn",
                 "BEGIN ADVENTURE",
                 OnStart, ColorTheme.ButtonSuccess, ColorTheme.FontButton);
-            UIFactory.SetAnchored(startBtn.GetComponent<RectTransform>(),
+            UIFactory.SetAnchored(_startBtn.GetComponent<RectTransform>(),
                 new Vector2(0.1f, 0.04f), new Vector2(0.9f, 0.14f), Vector2.zero, Vector2.zero);
         }
 
@@ -133,6 +134,7 @@ namespace SpaceTrader.UI.Screens
             _remainLabel.text  = $"Remaining: {rem}";
             _remainLabel.color = rem == 0 ? ColorTheme.TextPositive : ColorTheme.TextWarning;
             for (int i = 0; i < 4; i++) _skillLabels[i].text = _skills[i].ToString();
+            if (_startBtn != null) _startBtn.interactable = rem == 0;
         }
 
         void OnStart()
@@ -140,10 +142,9 @@ namespace SpaceTrader.UI.Screens
             string name = _nameInput.text.Trim();
             if (string.IsNullOrEmpty(name)) name = "Jameson";
 
-            TravelerSystem.StartNewGame();
+            TravelerSystem.StartNewGame(_difficulty);
             var G = GameState.Instance;
             G.NameCommander           = name;
-            G.Difficulty              = _difficulty;
             G.Commander.Pilot         = _skills[0];
             G.Commander.Fighter       = _skills[1];
             G.Commander.Trader        = _skills[2];

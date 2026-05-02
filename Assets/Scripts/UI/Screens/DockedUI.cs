@@ -16,6 +16,7 @@ namespace SpaceTrader.UI.Screens
         Slider _fuelBar, _hullBar;
         TextMeshProUGUI _fuelLabel, _hullLabel;
         TextMeshProUGUI _specialText;
+        UnityEngine.UI.Button _specialBtn;
 
         public void Initialize(GameObject panel)
         {
@@ -69,11 +70,18 @@ namespace SpaceTrader.UI.Screens
             UIFactory.SetAnchored(_statusText.rectTransform,
                 new Vector2(0.05f, 0.75f), new Vector2(0.95f, 0.79f), Vector2.zero, Vector2.zero);
 
-            // ── Special event notice (74–72%) ─────────────────────────────────
+            // ── Special event notice (74–72%) — tappable when active ─────────
             _specialText = UIFactory.LabelWrap(panel.transform, "Special", "",
                 ColorTheme.FontSmall, ColorTheme.TextAccent, TextAlignmentOptions.Center);
             UIFactory.SetAnchored(_specialText.rectTransform,
                 new Vector2(0.05f, 0.71f), new Vector2(0.95f, 0.75f), Vector2.zero, Vector2.zero);
+            // Add a transparent Image+Button so the label can be clicked. Without
+            // this the SpecialEvent screen is unreachable from normal play.
+            var specialImg = _specialText.gameObject.AddComponent<UnityEngine.UI.Image>();
+            specialImg.color = new Color(0, 0, 0, 0);
+            _specialBtn = _specialText.gameObject.AddComponent<UnityEngine.UI.Button>();
+            _specialBtn.onClick.AddListener(
+                () => UIManager.Instance.Navigate(GameScreen.SpecialEvent));
 
             // ── Navigation grid (70–20%) ──────────────────────────────────────
             BuildNavGrid(panel);
@@ -172,9 +180,9 @@ namespace SpaceTrader.UI.Screens
             _debtText.text    = G.Debt > 0 ? $"Debt: {UIFactory.Cr(G.Debt)}" : "";
 
             // Special event notice
-            _specialText.text = sys.Special >= 0
-                ? $"Special event available!"
-                : "";
+            bool hasSpecial = sys.Special >= 0;
+            _specialText.text = hasSpecial ? "Special event available — tap to view" : "";
+            _specialBtn.interactable = hasSpecial;
 
             // Fuel bar
             int maxFuel = FuelSystem.GetFuelTanks();

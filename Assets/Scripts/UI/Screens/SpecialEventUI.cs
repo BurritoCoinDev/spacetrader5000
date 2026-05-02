@@ -179,7 +179,12 @@ namespace SpaceTrader.UI.Screens
             var G   = GameState.Instance;
             int evt = G.CurrentSystem.Special;
             ApplyEvent(evt);
-            G.CurrentSystem.Special = -1;
+            // Only consume the event if the handler didn't already set a new
+            // Special on this system (e.g. ReactorDelivered queues
+            // GetSpecialLaser as a follow-up). Without this guard, a quest
+            // that no-ops due to unmet preconditions (insufficient credits /
+            // no free slot / no cargo space) would be permanently lost.
+            if (G.CurrentSystem.Special == evt) G.CurrentSystem.Special = -1;
             UIManager.Instance.NavigateBack();
         }
 
@@ -295,19 +300,6 @@ namespace SpaceTrader.UI.Screens
                             }
                         }
                         G.ReactorStatus = -1;   // fully complete
-                    }
-                    break;
-
-                case GetFuelCompactor:
-                    {
-                        for (int i = 0; i < MaxGadget; i++)
-                        {
-                            if (G.Ship.Gadget[i] < 0)
-                            {
-                                G.Ship.Gadget[i] = FuelCompactor;
-                                break;
-                            }
-                        }
                     }
                     break;
 

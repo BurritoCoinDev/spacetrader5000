@@ -92,6 +92,11 @@ namespace SpaceTrader
         {
             var ship  = G.Ship;
             var stype = GameData.Shiptypes[ship.Type];
+            // Reject duplicates — original Shipyard.c blocks two of the same
+            // gadget type. Otherwise FuelCompactor / AutoRepair stack and
+            // multiply their effects.
+            for (int i = 0; i < MaxGadget; i++)
+                if (ship.Gadget[i] == gadgetType) return false;
             int slot  = GetFirstEmptySlot(stype.GadgetSlots, ship.Gadget);
             if (slot < 0) return false;
             long cost = GameData.Gadgettypes[gadgetType].Price;

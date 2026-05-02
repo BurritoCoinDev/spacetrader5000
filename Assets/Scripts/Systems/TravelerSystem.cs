@@ -359,9 +359,12 @@ namespace SpaceTrader
             return true;
         }
 
-        public static bool StartNewGame()
+        public static bool StartNewGame(int difficulty = Normal)
         {
             G.Reset();
+            // Set difficulty before galaxy generation — Robots/Narcotics
+            // initial stock and CountDown both key off G.Difficulty.
+            G.Difficulty = difficulty;
 
             var cmdr = G.Commander;
             cmdr.CurSystem = SolSystem;

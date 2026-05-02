@@ -52,12 +52,16 @@ namespace SpaceTrader.UI.Screens
 
             bool any = false;
 
+            // Quest-reward equipment (Morgan's Laser, Lightning Shield, Fuel
+            // Compactor) lives at indices >= Max*Type and isn't sellable —
+            // original blocks the sale to prevent laundering high-value items.
             for (int i = 0; i < MaxWeapon; i++)
             {
-                if (G.Ship.Weapon[i] < 0) continue;
+                int wIdx = G.Ship.Weapon[i];
+                if (wIdx < 0 || wIdx >= MaxWeaponType) continue;
                 any = true;
                 int slot = i;
-                var wt   = GameData.Weapontypes[G.Ship.Weapon[i]];
+                var wt   = GameData.Weapontypes[wIdx];
                 AddRow($"W{i}", wt.Name, wt.Price * 3 / 4, () => {
                     ShipyardSystem.RemoveWeapon(slot);
                     BuildAndRefresh();
@@ -66,10 +70,11 @@ namespace SpaceTrader.UI.Screens
 
             for (int i = 0; i < MaxShield; i++)
             {
-                if (G.Ship.Shield[i] < 0) continue;
+                int sIdx = G.Ship.Shield[i];
+                if (sIdx < 0 || sIdx >= MaxShieldType) continue;
                 any = true;
                 int slot = i;
-                var sh   = GameData.Shieldtypes[G.Ship.Shield[i]];
+                var sh   = GameData.Shieldtypes[sIdx];
                 AddRow($"S{i}", sh.Name, sh.Price * 3 / 4, () => {
                     ShipyardSystem.RemoveShield(slot);
                     BuildAndRefresh();
@@ -78,10 +83,11 @@ namespace SpaceTrader.UI.Screens
 
             for (int i = 0; i < MaxGadget; i++)
             {
-                if (G.Ship.Gadget[i] < 0) continue;
+                int gIdx = G.Ship.Gadget[i];
+                if (gIdx < 0 || gIdx >= MaxGadgetType) continue;
                 any = true;
                 int slot = i;
-                var gd   = GameData.Gadgettypes[G.Ship.Gadget[i]];
+                var gd   = GameData.Gadgettypes[gIdx];
                 AddRow($"G{i}", gd.Name, gd.Price * 3 / 4, () => {
                     ShipyardSystem.RemoveGadget(slot);
                     BuildAndRefresh();
