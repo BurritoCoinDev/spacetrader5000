@@ -13,10 +13,34 @@ namespace SpaceTrader.UI.Screens
     public class EncounterUI : MonoBehaviour, IScreenUI
     {
         TextMeshProUGUI _titleText, _descText;
+        TextMeshProUGUI _playerNameText, _oppNameText;
         TextMeshProUGUI _playerHullText, _oppHullText;
         TextMeshProUGUI _playerShieldText, _oppShieldText;
+        Image _playerShipImg, _oppShipImg;
         Transform _btnContainer;
         readonly List<Button> _actionBtns = new();
+
+        // Placeholder colors per ship type (indexed by Shiptypes index).
+        // Quest ships and out-of-range fall back to a neutral purple.
+        // To be replaced when real ship sprites are imported.
+        static readonly Color[] ShipColors =
+        {
+            new Color(0.65f, 0.65f, 0.70f),  // 0  Flea
+            new Color(0.30f, 0.75f, 0.30f),  // 1  Gnat
+            new Color(0.95f, 0.85f, 0.20f),  // 2  Firefly
+            new Color(0.85f, 0.30f, 0.30f),  // 3  Mosquito
+            new Color(0.95f, 0.55f, 0.20f),  // 4  Bumblebee
+            new Color(0.55f, 0.40f, 0.25f),  // 5  Beetle
+            new Color(0.85f, 0.65f, 0.20f),  // 6  Hornet
+            new Color(0.50f, 0.85f, 0.55f),  // 7  Grasshopper
+            new Color(0.65f, 0.20f, 0.20f),  // 8  Termite
+            new Color(1.00f, 0.95f, 0.40f),  // 9  Wasp
+        };
+
+        static Color ShipColor(int type)
+            => (type >= 0 && type < ShipColors.Length)
+               ? ShipColors[type]
+               : new Color(0.55f, 0.30f, 0.85f);
 
         // Combat state
         bool _playerFleeing;
@@ -32,58 +56,75 @@ namespace SpaceTrader.UI.Screens
             // Title bar (no back button during encounter)
             var titleBar = UIFactory.Panel(panel.transform, "TitleBar", ColorTheme.HeaderBg);
             UIFactory.SetAnchored(titleBar.GetComponent<RectTransform>(),
-                new Vector2(0, 0.90f), Vector2.one, Vector2.zero, Vector2.zero);
+                new Vector2(0, 0.92f), Vector2.one, Vector2.zero, Vector2.zero);
 
             _titleText = UIFactory.Label(titleBar.transform, "Title", "ENCOUNTER",
                 ColorTheme.FontHeader, ColorTheme.TextAccent, TextAlignmentOptions.Center);
             UIFactory.Stretch(_titleText.rectTransform, 8, 8, 4, 4);
 
-            // Opponent status
-            var oppPanel = UIFactory.Panel(panel.transform, "OppPanel", ColorTheme.PanelBg);
-            UIFactory.SetAnchored(oppPanel.GetComponent<RectTransform>(),
-                new Vector2(0, 0.74f), new Vector2(1, 0.90f), new Vector2(8, 4), new Vector2(-8, -4));
+            // Two ship cards side by side: player on the left, opponent on the right
+            BuildShipCard(panel.transform, "PlyCard",
+                new Vector2(0.02f, 0.55f), new Vector2(0.49f, 0.91f),
+                out _playerShipImg, out _playerNameText, out _playerHullText, out _playerShieldText);
+            BuildShipCard(panel.transform, "OppCard",
+                new Vector2(0.51f, 0.55f), new Vector2(0.98f, 0.91f),
+                out _oppShipImg, out _oppNameText, out _oppHullText, out _oppShieldText);
 
-            _oppHullText = UIFactory.Label(oppPanel.transform, "OppHull", "",
-                ColorTheme.FontSmall, ColorTheme.TextNegative, TextAlignmentOptions.Left);
-            UIFactory.SetAnchored(_oppHullText.rectTransform,
-                new Vector2(0, 0), new Vector2(0.5f, 0.5f), new Vector2(8, 4), new Vector2(-4, -4));
-
-            _oppShieldText = UIFactory.Label(oppPanel.transform, "OppShield", "",
-                ColorTheme.FontSmall, ColorTheme.TextSecondary, TextAlignmentOptions.Right);
-            UIFactory.SetAnchored(_oppShieldText.rectTransform,
-                new Vector2(0.5f, 0), new Vector2(1, 0.5f), new Vector2(4, 4), new Vector2(-8, -4));
-
-            // Description
+            // Description text below the ships
             _descText = UIFactory.LabelWrap(panel.transform, "Desc", "",
-                ColorTheme.FontSmall, ColorTheme.TextPrimary, TextAlignmentOptions.Left);
+                ColorTheme.FontBody, ColorTheme.TextPrimary, TextAlignmentOptions.Center);
             UIFactory.SetAnchored(_descText.rectTransform,
-                new Vector2(0.02f, 0.40f), new Vector2(0.98f, 0.74f), new Vector2(4, 4), new Vector2(-4, -4));
+                new Vector2(0.04f, 0.20f), new Vector2(0.96f, 0.54f), new Vector2(4, 4), new Vector2(-4, -4));
 
-            // Player status
-            var plyPanel = UIFactory.Panel(panel.transform, "PlyPanel", ColorTheme.PanelBg);
-            UIFactory.SetAnchored(plyPanel.GetComponent<RectTransform>(),
-                new Vector2(0, 0.30f), new Vector2(1, 0.40f), new Vector2(8, 4), new Vector2(-8, -4));
-
-            _playerHullText = UIFactory.Label(plyPanel.transform, "PlyHull", "",
-                ColorTheme.FontSmall, ColorTheme.HullFill, TextAlignmentOptions.Left);
-            UIFactory.SetAnchored(_playerHullText.rectTransform,
-                new Vector2(0, 0), new Vector2(0.5f, 1), new Vector2(8, 4), new Vector2(-4, -4));
-
-            _playerShieldText = UIFactory.Label(plyPanel.transform, "PlyShield", "",
-                ColorTheme.FontSmall, ColorTheme.TextSecondary, TextAlignmentOptions.Right);
-            UIFactory.SetAnchored(_playerShieldText.rectTransform,
-                new Vector2(0.5f, 0), new Vector2(1, 1), new Vector2(4, 4), new Vector2(-8, -4));
-
-            // Action buttons
+            // Action buttons row
             _btnContainer = UIFactory.TransparentPanel(panel.transform, "Btns").transform;
             UIFactory.SetAnchored(_btnContainer.GetComponent<RectTransform>(),
-                new Vector2(0, 0.01f), new Vector2(1, 0.30f), new Vector2(8, 4), new Vector2(-8, -4));
+                new Vector2(0, 0.01f), new Vector2(1, 0.19f), new Vector2(8, 4), new Vector2(-8, -4));
             var glg = _btnContainer.gameObject.AddComponent<GridLayoutGroup>();
             glg.cellSize        = new Vector2(490, 80);
             glg.spacing         = new Vector2(10, 10);
             glg.padding         = new RectOffset(4, 4, 4, 4);
             glg.constraint      = GridLayoutGroup.Constraint.FixedColumnCount;
             glg.constraintCount = 2;
+        }
+
+        // Builds a "ship card": placeholder colored ship icon up top, then the
+        // ship name, hull, and shield stacked underneath. Real sprites can be
+        // dropped in later by replacing the Image's sprite/color.
+        void BuildShipCard(Transform parent, string name,
+            Vector2 anchorMin, Vector2 anchorMax,
+            out Image shipImg, out TextMeshProUGUI nameText,
+            out TextMeshProUGUI hullText, out TextMeshProUGUI shieldText)
+        {
+            var card = UIFactory.Panel(parent, name, ColorTheme.PanelBg);
+            UIFactory.SetAnchored(card.GetComponent<RectTransform>(),
+                anchorMin, anchorMax, new Vector2(4, 4), new Vector2(-4, -4));
+
+            // Ship icon — currently a flat colored rectangle as a placeholder.
+            var imgGo = new GameObject("ShipImg");
+            imgGo.transform.SetParent(card.transform, false);
+            shipImg = imgGo.AddComponent<Image>();
+            shipImg.color = Color.gray;
+            var imgRt = imgGo.GetComponent<RectTransform>();
+            imgRt.anchorMin = new Vector2(0.18f, 0.42f);
+            imgRt.anchorMax = new Vector2(0.82f, 0.96f);
+            imgRt.offsetMin = Vector2.zero;
+            imgRt.offsetMax = Vector2.zero;
+
+            nameText = UIFactory.Label(card.transform, "Name", "",
+                ColorTheme.FontBody, ColorTheme.TextAccent, TextAlignmentOptions.Center);
+            UIFactory.SetAnchored(nameText.rectTransform,
+                new Vector2(0, 0.28f), new Vector2(1, 0.42f), new Vector2(4, 0), new Vector2(-4, 0));
+
+            hullText = UIFactory.Label(card.transform, "Hull", "",
+                ColorTheme.FontSmall, ColorTheme.HullFill, TextAlignmentOptions.Center);
+            UIFactory.SetAnchored(hullText.rectTransform,
+                new Vector2(0, 0.15f), new Vector2(1, 0.28f), new Vector2(4, 0), new Vector2(-4, 0));
+
+            shieldText = UIFactory.Label(card.transform, "Shield", "",
+                ColorTheme.FontSmall, ColorTheme.TextSecondary, TextAlignmentOptions.Center);
+            UIFactory.SetAnchored(shieldText.rectTransform,
+                new Vector2(0, 0.02f), new Vector2(1, 0.15f), new Vector2(4, 0), new Vector2(-4, 0));
         }
 
         public void OnShow()
@@ -99,20 +140,25 @@ namespace SpaceTrader.UI.Screens
         {
             var G   = GameState.Instance;
             var opp = G.Opponent;
-            var st  = GameData.Shiptypes[opp.Type];
+            var oppSt = GameData.Shiptypes[opp.Type];
+            var plySt = GameData.Shiptypes[G.Ship.Type];
 
+            // Opponent card
+            _oppNameText.text    = oppSt.Name;
+            _oppShipImg.color    = ShipColor(opp.Type);
             long oppHull    = opp.Hull;
-            long oppMaxHull = st.HullStrength;
+            long oppMaxHull = oppSt.HullStrength;
             long oppShield  = EncounterSystem.TotalShieldStrength(opp);
-
-            _oppHullText.text    = $"Opp Hull: {oppHull}/{oppMaxHull}";
+            _oppHullText.text    = $"Hull: {oppHull}/{oppMaxHull}";
             _oppShieldText.text  = oppShield > 0 ? $"Shield: {oppShield}" : "";
 
+            // Player card
+            _playerNameText.text  = plySt.Name;
+            _playerShipImg.color  = ShipColor(G.Ship.Type);
             long plyHull    = G.Ship.Hull;
             long plyMaxHull = ShipyardSystem.GetHullStrength();
             long plyShield  = EncounterSystem.TotalShieldStrength(G.Ship);
-
-            _playerHullText.text   = $"Your Hull: {plyHull}/{plyMaxHull}";
+            _playerHullText.text   = $"Hull: {plyHull}/{plyMaxHull}";
             _playerShieldText.text = plyShield > 0 ? $"Shield: {plyShield}" : "";
             _playerHullText.color  = plyHull < plyMaxHull / 4 ? ColorTheme.TextNegative : ColorTheme.HullFill;
         }
@@ -479,21 +525,28 @@ namespace SpaceTrader.UI.Screens
 
         string EncounterDescription(int enc)
         {
-            var opp = GameData.Shiptypes[GameState.Instance.Opponent.Type].Name;
-            if (enc == PoliceInspection)          return $"A {opp} requests an inspection.";
-            if (enc == PoliceAttack)              return $"A {opp} attacks you!";
-            if (EncounterSystem.IsPirate(enc))    return $"A {opp} attacks — pirates!";
-            if (EncounterSystem.IsTrader(enc))    return $"A {opp} passes by.";
-            if (EncounterSystem.IsSpaceMonster(enc)) return "A massive Space Monster blocks your path!";
-            if (EncounterSystem.IsDragonfly(enc)) return "The Dragonfly cuts you off!";
-            if (EncounterSystem.IsScarab(enc))    return "The Scarab swoops to attack!";
-            if (enc == CaptainAhabEncounter)      return "Captain Ahab hails you and offers a skill tonic.";
-            if (enc == CaptainConradEncounter)    return "Captain Conrad hails you and offers to train you.";
-            if (enc == CaptainHuieEncounter)      return "Captain Huie hails you and offers to train you.";
-            if (enc == MarieCelesteEncounter)     return "The Marie Celeste drifts silently. Its hold looks full.";
-            if (enc == BottleOldEncounter)        return "A sealed bottle drifts past. It smells questionable.";
-            if (enc == BottleGoodEncounter)       return "A sealed bottle drifts past. It smells wonderful.";
-            return "Something unusual happens.";
+            var G       = GameState.Instance;
+            var oppName = GameData.Shiptypes[G.Opponent.Type].Name.ToLower();
+            string dest = (G.WarpSystem >= 0 && G.WarpSystem < MaxSolarSystem)
+                ? GameData.SolarSystemNames[G.SolarSystem[G.WarpSystem].NameIndex]
+                : "your destination";
+            string prefix = $"At {G.Clicks} clicks from {dest}, ";
+
+            if (enc == PoliceInspection)          return prefix + $"a police {oppName} requests an inspection.";
+            if (enc == PoliceAttack)              return prefix + $"a police {oppName} attacks you!";
+            if (EncounterSystem.IsPirate(enc))    return prefix + $"you encounter a pirate {oppName}.\nYour opponent attacks.";
+            if (enc == TraderAttack)              return prefix + $"a trader {oppName} attacks!";
+            if (EncounterSystem.IsTrader(enc))    return prefix + $"a trader {oppName} passes by.";
+            if (EncounterSystem.IsSpaceMonster(enc)) return prefix + "a massive Space Monster blocks your path!";
+            if (EncounterSystem.IsDragonfly(enc)) return prefix + "the Dragonfly cuts you off!";
+            if (EncounterSystem.IsScarab(enc))    return prefix + "the Scarab swoops to attack!";
+            if (enc == CaptainAhabEncounter)      return prefix + "Captain Ahab hails you and offers a skill tonic.";
+            if (enc == CaptainConradEncounter)    return prefix + "Captain Conrad hails you and offers to train you.";
+            if (enc == CaptainHuieEncounter)      return prefix + "Captain Huie hails you and offers to train you.";
+            if (enc == MarieCelesteEncounter)     return prefix + "the Marie Celeste drifts silently. Its hold looks full.";
+            if (enc == BottleOldEncounter)        return prefix + "a sealed bottle drifts past. It smells questionable.";
+            if (enc == BottleGoodEncounter)       return prefix + "a sealed bottle drifts past. It smells wonderful.";
+            return prefix + "something unusual happens.";
         }
     }
 }
