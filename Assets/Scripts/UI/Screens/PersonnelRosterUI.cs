@@ -78,7 +78,14 @@ namespace SpaceTrader.UI.Screens
                 var merc    = G.Mercenary[mercIdx];
                 long daily  = (merc.Pilot + merc.Fighter + merc.Trader + merc.Engineer) * 3;
                 AddMercRow(merc, mercIdx, daily, true, () => {
+                    // Drop the merc at the current system so they're hireable
+                    // again from here, then compact the crew array so other
+                    // code that assumes contiguous packing keeps working.
+                    G.Mercenary[mercIdx].CurSystem = G.Commander.CurSystem;
                     G.Ship.Crew[slotIdx] = -1;
+                    for (int k = slotIdx; k < MaxCrew - 1; k++)
+                        G.Ship.Crew[k] = G.Ship.Crew[k + 1];
+                    G.Ship.Crew[MaxCrew - 1] = -1;
                     BuildAndRefresh();
                 });
             }

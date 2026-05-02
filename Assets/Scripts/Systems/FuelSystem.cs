@@ -13,9 +13,11 @@ namespace SpaceTrader
         public static int GetFuelTanks()
         {
             var ship = G.Ship;
-            int tanks = GameData.Shiptypes[ship.Type].FuelTanks;
-            if (SkillSystem.HasGadget(ship, FuelCompactor)) tanks += MaxRange;
-            return tanks;
+            // FuelCompactor REPLACES the ship's tank capacity with a flat 18,
+            // it does not add to it. Without this, large ships (Wasp etc.)
+            // reach unintended ranges far beyond what the original allows.
+            if (SkillSystem.HasGadget(ship, FuelCompactor)) return 18;
+            return GameData.Shiptypes[ship.Type].FuelTanks;
         }
 
         public static int GetFuel() => G.Ship.Fuel;

@@ -163,8 +163,9 @@ namespace SpaceTrader
                 G.BuyingPrice[i]   = 0;
             }
 
-            // Tribbles travel with the commander
-            newShip.Tribbles = G.Ship.Tribbles;
+            // Tribbles do NOT survive a ship trade-in — buying a new ship is
+            // the canonical way to get rid of them in the original.
+            newShip.Tribbles = 0;
 
             G.Ship = newShip;
             G.HullUpgraded = false;

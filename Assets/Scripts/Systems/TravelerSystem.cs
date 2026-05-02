@@ -376,12 +376,38 @@ namespace SpaceTrader
             PlaceWormholes();
             GenerateGalaxy();
             PlaceSpecialEvents();
+            InitMercenaries();
 
             G.WarpSystem = SolSystem;
             DeterminePrices(SolSystem);
             G.Ship.Fuel = FuelSystem.GetFuelTanks();
             G.GameLoaded = false;
             return true;
+        }
+
+        // Distributes hireable mercs across the galaxy with random skills.
+        // Without this, every Mercenary[] entry has CurSystem=0 and skills=0,
+        // so the only "available" merc shows up at Sol with useless stats.
+        static void InitMercenaries()
+        {
+            for (int i = 1; i < MaxCrewMember; i++)
+            {
+                G.Mercenary[i].Pilot    = SkillSystem.RandomSkill();
+                G.Mercenary[i].Fighter  = SkillSystem.RandomSkill();
+                G.Mercenary[i].Trader   = SkillSystem.RandomSkill();
+                G.Mercenary[i].Engineer = SkillSystem.RandomSkill();
+                // Place at a random system, avoiding Kravat (reserved for the
+                // Wild quest's Zeethibal placement).
+                int sys;
+                do { sys = GameMath.GetRandom(MaxSolarSystem); }
+                while (sys == KravatSystem);
+                G.Mercenary[i].CurSystem = sys;
+            }
+            // Famous-captain slot stays at MaxSkill across the board.
+            G.Mercenary[MaxCrewMember].Pilot    = MaxSkill;
+            G.Mercenary[MaxCrewMember].Fighter  = MaxSkill;
+            G.Mercenary[MaxCrewMember].Trader   = MaxSkill;
+            G.Mercenary[MaxCrewMember].Engineer = MaxSkill;
         }
 
         static void GenerateGalaxy()

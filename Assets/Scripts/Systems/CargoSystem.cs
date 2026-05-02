@@ -14,8 +14,16 @@ namespace SpaceTrader
         {
             var ship = G.Ship;
             int bays = GameData.Shiptypes[ship.Type].CargoBays;
-            if (SkillSystem.HasGadget(ship, ExtraBays)) bays += 5;
-            if (G.ReactorStatus > 0 && G.ReactorStatus <= 20) bays -= 5;
+            // Extra bays gadget can stack across multiple gadget slots in
+            // the original; loop instead of using HasGadget.
+            for (int i = 0; i < MaxGadget; i++)
+                if (ship.Gadget[i] == ExtraBays) bays += 5;
+            // Antidote takes 10 bays during the Japori quest.
+            if (G.JaporiDiseaseStatus == 1) bays -= 10;
+            // Reactor takes 14 bays at quest start (status 1) and decays
+            // by ~0.5 bays per day to 5 bays at the end of the quest.
+            if (G.ReactorStatus > 0 && G.ReactorStatus < 21)
+                bays -= (5 + 10 - (G.ReactorStatus - 1) / 2);
             return bays;
         }
 
