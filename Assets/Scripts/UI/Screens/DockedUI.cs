@@ -75,11 +75,13 @@ namespace SpaceTrader.UI.Screens
                 ColorTheme.FontSmall, ColorTheme.TextAccent, TextAlignmentOptions.Center);
             UIFactory.SetAnchored(_specialText.rectTransform,
                 new Vector2(0.05f, 0.71f), new Vector2(0.95f, 0.75f), Vector2.zero, Vector2.zero);
-            // Add a transparent Image+Button so the label can be clicked. Without
-            // this the SpecialEvent screen is unreachable from normal play.
-            var specialImg = _specialText.gameObject.AddComponent<UnityEngine.UI.Image>();
-            specialImg.color = new Color(0, 0, 0, 0);
+            // Make the label clickable — TextMeshProUGUI is itself a Graphic
+            // (raycastTarget=true by default), so a Button on the same object
+            // routes taps to the text without needing a separate Image.
+            // Adding Image alongside TMP throws "only one Graphic per object".
+            _specialText.raycastTarget = true;
             _specialBtn = _specialText.gameObject.AddComponent<UnityEngine.UI.Button>();
+            _specialBtn.targetGraphic = _specialText;
             _specialBtn.onClick.AddListener(
                 () => UIManager.Instance.Navigate(GameScreen.SpecialEvent));
 
