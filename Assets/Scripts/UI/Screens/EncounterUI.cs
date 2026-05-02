@@ -164,6 +164,7 @@ namespace SpaceTrader.UI.Screens
                 new Vector2(0.25f, 0.02f), new Vector2(0.75f, 0.16f), Vector2.zero, Vector2.zero);
 
             _traderDialog.SetActive(false);
+        }
 
         // Builds a "ship card": placeholder colored ship icon up top, then the
         // ship name, hull, and shield stacked underneath. Real sprites can be
