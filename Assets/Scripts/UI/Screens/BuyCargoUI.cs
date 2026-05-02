@@ -89,14 +89,16 @@ namespace SpaceTrader.UI.Screens
         void BuildColumnHeaders(Transform parent)
         {
             // Headers aligned to ColX: Item, Price, Avail, Hold, then a combined "Qty / Max" section
-            (string text, int col, TextAlignmentOptions align)[] hdrs =
+            // Headers must match the value alignment of their column:
+            // Price values are right-aligned, so the header is too.
+            (string text, int col, TextAlignmentOptions align, int rightPad)[] hdrs =
             {
-                ("Item",  0, TextAlignmentOptions.Left),
-                ("Price", 1, TextAlignmentOptions.Left),
-                ("Avail", 2, TextAlignmentOptions.Center),
-                ("Hold",  3, TextAlignmentOptions.Center),
-                ("Qty",   4, TextAlignmentOptions.Center),   // spans cols 4-6 (the - qty + group)
-                ("Max",   7, TextAlignmentOptions.Center),
+                ("Item",  0, TextAlignmentOptions.Left,   -4),
+                ("Price", 1, TextAlignmentOptions.Right,  -12),
+                ("Avail", 2, TextAlignmentOptions.Center, -4),
+                ("Hold",  3, TextAlignmentOptions.Center, -4),
+                ("Qty",   4, TextAlignmentOptions.Center, -4),   // spans cols 4-6 (the - qty + group)
+                ("Max",   7, TextAlignmentOptions.Center, -4),
             };
 
             // col 4 header spans across the three button columns (4,5,6) to label the qty controls
@@ -110,7 +112,7 @@ namespace SpaceTrader.UI.Screens
                     ColorTheme.FontBody, ColorTheme.TextSecondary, hdrs[i].align);
                 UIFactory.SetAnchored(lbl.rectTransform,
                     new Vector2(xMin, 0), new Vector2(xMax, 1),
-                    new Vector2(4, 2), new Vector2(-4, -2));
+                    new Vector2(4, 2), new Vector2(hdrs[i].rightPad, -2));
             }
         }
 
@@ -144,7 +146,7 @@ namespace SpaceTrader.UI.Screens
                     ColorTheme.FontBody, ColorTheme.TextPositive, TextAlignmentOptions.Right);
                 UIFactory.SetAnchored(w.Price.rectTransform,
                     new Vector2(ColX[1], 0), new Vector2(ColX[2], 1),
-                    new Vector2(4, 4), new Vector2(-4, -4));
+                    new Vector2(4, 4), new Vector2(-12, -4));
 
                 w.Avail = UIFactory.Label(row.transform, "Avail", "---",
                     ColorTheme.FontBody, ColorTheme.TextSecondary, TextAlignmentOptions.Center);
