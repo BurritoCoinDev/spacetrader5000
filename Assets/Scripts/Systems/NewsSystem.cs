@@ -15,6 +15,20 @@ namespace SpaceTrader
         public static long NewspaperPrice()
             => (G.CurrentSystem.TechLevel + 1) * 2L;
 
+        // Newspaper-style headline for each non-Uneventful system status.
+        // {0} is replaced with the system name.
+        static readonly string[] StatusHeadlines =
+        {
+            null, // 0 Uneventful — not reported
+            "Military conflict reported in the {0} system. Ore and arms prices are high.",
+            "Plague outbreak in the {0} system. Medical supplies desperately needed.",
+            "Severe drought gripping the {0} system. Water at a premium.",
+            "Evidence suggests terrible boredom in the {0} system. Games and diversions sought.",
+            "Bitter cold snap strikes the {0} system. Fur traders rushing to meet demand.",
+            "Crop failure devastates the {0} system. Food prices soaring.",
+            "Labour shortage cripples the {0} system. Machines and robots needed urgently.",
+        };
+
         // Returns the list of headlines to display. Call after paying.
         public static List<string> GetHeadlines()
         {
@@ -83,6 +97,40 @@ namespace SpaceTrader
                 lines.Add($"CROP FAILURE: Harvests have failed on {GameData.SolarSystemNames[sys.NameIndex]}. Food prices soaring.");
             else if (sys.Status == LackOfWorkers)
                 lines.Add($"LABOUR SHORTAGE: {GameData.SolarSystemNames[sys.NameIndex]} desperately needs workers and machinery.");
+
+            // ── Other-system status reports (primary trade intelligence) ─────
+            // These are the "Evidence suggests..." headlines from the original.
+            for (int i = 0; i < MaxSolarSystem; i++)
+            {
+                if (i == G.Commander.CurSystem) continue;
+                var other = G.SolarSystem[i];
+                int st = other.Status;
+                if (st <= Uneventful || st >= StatusHeadlines.Length) continue;
+                string tpl = StatusHeadlines[st];
+                if (tpl == null) continue;
+                lines.Add(string.Format(tpl, GameData.SolarSystemNames[other.NameIndex]));
+            }
+
+            // ── Local price spotlight ────────────────────────────────────────
+            // Find the two items with the highest sell price at this system.
+            int best1 = -1, best2 = -1;
+            long p1 = 0, p2 = 0;
+            for (int i = 0; i < MaxTradeItem; i++)
+            {
+                if (G.SellPrice[i] <= 0) continue;
+                if (G.SellPrice[i] > p1) { best2 = best1; p2 = p1; best1 = i; p1 = G.SellPrice[i]; }
+                else if (G.SellPrice[i] > p2) { best2 = i; p2 = G.SellPrice[i]; }
+            }
+            if (best1 >= 0)
+            {
+                string spotlight = best2 >= 0
+                    ? $"MARKET REPORT: {GameData.SolarSystemNames[sys.NameIndex]} buyers paying top rates for " +
+                      $"{GameData.Tradeitems[best1].Name} ({p1} cr.) and " +
+                      $"{GameData.Tradeitems[best2].Name} ({p2} cr.)."
+                    : $"MARKET REPORT: {GameData.SolarSystemNames[sys.NameIndex]} buyers paying top rates for " +
+                      $"{GameData.Tradeitems[best1].Name} ({p1} cr.).";
+                lines.Add(spotlight);
+            }
 
             // ── Commander's record ────────────────────────────────────────────
 
