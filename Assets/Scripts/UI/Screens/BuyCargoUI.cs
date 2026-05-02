@@ -97,7 +97,7 @@ namespace SpaceTrader.UI.Screens
                 ("Price", 1, TextAlignmentOptions.Right,  -12),
                 ("Avail", 2, TextAlignmentOptions.Center, -4),
                 ("Hold",  3, TextAlignmentOptions.Center, -4),
-                ("Qty",   4, TextAlignmentOptions.Center, -4),   // spans cols 4-6 (the - qty + group)
+                ("Bought",4, TextAlignmentOptions.Center, -4),   // spans cols 4-6 (the - qty + group)
                 ("Max",   7, TextAlignmentOptions.Center, -4),
             };
 
@@ -167,7 +167,7 @@ namespace SpaceTrader.UI.Screens
                     new Vector2(2, 0), new Vector2(-2, 0));
 
                 w.QtyLabel = UIFactory.Label(row.transform, "Qty", "0",
-                    ColorTheme.FontHeader, ColorTheme.TextAccent, TextAlignmentOptions.Center);
+                    ColorTheme.FontHeader, ColorTheme.TextPositive, TextAlignmentOptions.Center);
                 UIFactory.SetAnchored(w.QtyLabel.rectTransform,
                     new Vector2(ColX[5], 0), new Vector2(ColX[6], 1),
                     new Vector2(2, 4), new Vector2(-2, -4));
