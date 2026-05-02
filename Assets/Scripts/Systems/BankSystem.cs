@@ -12,9 +12,13 @@ namespace SpaceTrader
 
         public static long MaxLoan()
         {
-            long worth = ShipPriceSystem.CurrentShipPriceWithoutCargo(true);
-            long max   = GameMath.Max(0L, worth / 10 - G.Debt);
-            return GameMath.Min(max, DebtTooLarge - G.Debt);
+            // Criminals are capped at 500 cr; clean records get net worth /
+            // 10 rounded down to the nearest 500, floored at 1000 and capped
+            // at 25000 — matches original Bank.c.
+            if (G.PoliceRecordScore < CleanScore) return 500L;
+            long raw = MoneySystem.CurrentWorth() / 10L;
+            raw = (raw / 500L) * 500L;
+            return GameMath.Min(25000L, GameMath.Max(1000L, raw));
         }
 
         public static void GetLoan(long amount)
@@ -32,12 +36,13 @@ namespace SpaceTrader
         }
 
         public static bool CanGetInsurance()
-            => !G.Insurance && G.NoClaim == 0 && G.EscapePod;
+            => !G.Insurance && G.EscapePod;
 
         public static void BuyInsurance()
         {
             if (!CanGetInsurance()) return;
             G.Insurance = true;
+            G.NoClaim   = 0;       // restart the no-claim counter on (re)purchase
         }
 
         public static void CancelInsurance()

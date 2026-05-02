@@ -149,15 +149,13 @@ namespace SpaceTrader
             for (int i = 0; i < MaxGadget && gSlot < stype.GadgetSlots; i++)
                 if (G.Ship.Gadget[i] >= 0) newShip.Gadget[gSlot++] = G.Ship.Gadget[i];
 
-            // Transfer cargo up to new bay capacity; zero BuyingPrice for goods
-            // that didn't make the cut so running averages reset properly.
-            int freeBays = stype.CargoBays;
+            // Cargo and BuyingPrice are wiped on ship purchase — matches
+            // original BuyShipEvent.c. The shipyard UI should warn / require
+            // the player to sell cargo before the trade-in.
             for (int i = 0; i < MaxTradeItem; i++)
             {
-                int qty = GameMath.Min(G.Ship.Cargo[i], freeBays);
-                newShip.Cargo[i] = qty;
-                freeBays -= qty;
-                if (qty == 0) G.BuyingPrice[i] = 0;
+                newShip.Cargo[i]   = 0;
+                G.BuyingPrice[i]   = 0;
             }
 
             // Tribbles travel with the commander
@@ -165,6 +163,8 @@ namespace SpaceTrader
 
             G.Ship = newShip;
             G.HullUpgraded = false;
+            // Original also resets ScarabStatus from 3 → 0 on a buy
+            if (G.ScarabStatus == 3) G.ScarabStatus = 0;
         }
     }
 }

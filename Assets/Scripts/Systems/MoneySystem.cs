@@ -11,7 +11,15 @@ namespace SpaceTrader
         static GameState G => GameState.Instance;
 
         public static long InsuranceMoney()
-            => G.Insurance ? ShipPriceSystem.CurrentShipPriceWithoutCargo(true) / 50 : 0;
+        {
+            if (!G.Insurance) return 0;
+            // NoClaim discount caps at 90% of the base premium, applied per
+            // day insured. Without it premiums never get cheaper over time.
+            long basePrice = ShipPriceSystem.CurrentShipPriceWithoutCargo(true);
+            long discount  = 100 - GameMath.Min(G.NoClaim, 90);
+            long premium   = (basePrice * 5 / 2000) * discount / 100;
+            return GameMath.Max(1L, premium);
+        }
 
         public static long MercenaryMoney()
         {
@@ -37,15 +45,23 @@ namespace SpaceTrader
         // CurrentShipPrice already includes cargo, so do not add it again.
         public static long CurrentWorth()
         {
-            return G.Credits - G.Debt + ShipPriceSystem.CurrentShipPrice(false);
+            return G.Credits - G.Debt + ShipPriceSystem.CurrentShipPrice(false)
+                 + (G.MoonBought ? CostMoon : 0);
         }
 
         public static void PayInterest()
         {
-            if (G.Debt > 0)
+            if (G.Debt <= 0) return;
+            long interest = GameMath.Max(1L, G.Debt / 10);
+            // Pay from Credits first; only the shortfall grows Debt.
+            if (G.Credits > interest)
             {
-                long interest = GameMath.Max(1L, G.Debt / 10);
-                G.Debt += interest;
+                G.Credits -= interest;
+            }
+            else
+            {
+                G.Debt   += interest - G.Credits;
+                G.Credits = 0;
             }
         }
     }
