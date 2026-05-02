@@ -80,12 +80,10 @@ namespace SpaceTrader.UI.Screens
             }
             else
             {
-                string encDesc = DescribeEncounter(enc);
-                _statusText.text = $"ENCOUNTER!\n{encDesc}";
-                _waitingForInput = true;
-                btnLabel.text = "ENGAGE";
-                _continueBtn.onClick.RemoveAllListeners();
-                _continueBtn.onClick.AddListener(OnEncounter);
+                // Skip the intermediate ENGAGE confirmation — jump straight
+                // into the encounter screen. EncounterUI shows the same
+                // ship/identity info before the player must commit to an action.
+                UIManager.Instance.Navigate(GameScreen.Encounter);
             }
         }
 
@@ -108,40 +106,9 @@ namespace SpaceTrader.UI.Screens
 
         void OnContinue() => AdvanceTravel();
 
-        void OnEncounter()
-        {
-            UIManager.Instance.Navigate(GameScreen.Encounter);
-        }
-
         void OnArrival()
         {
             UIManager.Instance.Navigate(GameScreen.Docked);
-        }
-
-        string DescribeEncounter(int enc)
-        {
-            if (EncounterSystem.IsPolice(enc))
-            {
-                if (enc == PoliceInspection) return "Police ship — requesting inspection.";
-                if (enc == PoliceAttack)     return "Police ship — attacking!";
-                return "Police ship.";
-            }
-            if (EncounterSystem.IsPirate(enc))     return "Pirate ship — attacking!";
-            if (EncounterSystem.IsTrader(enc))      return "Trader ship.";
-            if (EncounterSystem.IsSpaceMonster(enc)) return "SPACE MONSTER!";
-            if (EncounterSystem.IsDragonfly(enc))   return "The Dragonfly — attacking!";
-            if (EncounterSystem.IsScarab(enc))      return "The Scarab — attacking!";
-            if (EncounterSystem.IsFamousCaptain(enc))
-            {
-                if (enc == CaptainAhabEncounter)   return "Captain Ahab hails you.";
-                if (enc == CaptainConradEncounter) return "Captain Conrad hails you.";
-                if (enc == CaptainHuieEncounter)   return "Captain Huie hails you.";
-                return "A famous captain hails you.";
-            }
-            if (enc == MarieCelesteEncounter)   return "The Marie Celeste — drifting!";
-            if (enc == BottleOldEncounter)      return "An old bottle drifts past.";
-            if (enc == BottleGoodEncounter)     return "A bottle of good stuff drifts past.";
-            return "Unknown encounter.";
         }
     }
 }
