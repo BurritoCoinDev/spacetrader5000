@@ -81,7 +81,7 @@ namespace SpaceTrader.UI.Screens
             UIFactory.SetAnchored(sellAllBtn.GetComponent<RectTransform>(),
                 Vector2.zero, new Vector2(0.48f, 1), Vector2.zero, Vector2.zero);
 
-            var clearBtn = UIFactory.Btn(btnRow.transform, "Clear", "CLEAR",
+            var clearBtn = UIFactory.Btn(btnRow.transform, "Undo", "UNDO",
                 OnClear, ColorTheme.ButtonDanger);
             UIFactory.SetAnchored(clearBtn.GetComponent<RectTransform>(),
                 new Vector2(0.52f, 0), Vector2.one, Vector2.zero, Vector2.zero);
