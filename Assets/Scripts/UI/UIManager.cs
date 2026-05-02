@@ -69,6 +69,16 @@ namespace SpaceTrader.UI
             }
         }
 
+        // Replaces the entire back-stack with the given sequence and shows the
+        // last entry. Used after game-over so the back button doesn't return
+        // to a stale, no-longer-valid screen (e.g. a destroyed encounter).
+        public void NavigateReplaceStack(params GameScreen[] screens)
+        {
+            _navStack.Clear();
+            foreach (var s in screens) _navStack.Push(s);
+            if (screens.Length > 0) ShowOnly(screens[screens.Length - 1]);
+        }
+
         public GameScreen Current =>
             _navStack.Count > 0 ? _navStack.Peek() : GameScreen.Title;
 

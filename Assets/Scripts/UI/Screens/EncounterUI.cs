@@ -530,7 +530,10 @@ namespace SpaceTrader.UI.Screens
                 TravelerSystem.TryRecordHighScore(Killed);
                 ShowResult("Your ship was DESTROYED!\nGame over.", () => {
                     SaveSystem.DeleteSave();
-                    UIManager.Instance.Navigate(GameScreen.HighScores);
+                    // Replace the stack so back-from-HighScores goes to Title,
+                    // not back into the destroyed encounter.
+                    UIManager.Instance.NavigateReplaceStack(
+                        GameScreen.Title, GameScreen.HighScores);
                 });
             }
         }
