@@ -202,11 +202,10 @@ namespace SpaceTrader
             if (G.ReactorStatus > 0 && G.ReactorStatus < 21)
             {
                 G.ReactorStatus += amount;
-                if (G.ReactorStatus > 20)
-                {
-                    EncounterSystem.EscapeWithPod();
-                    return;
-                }
+                // Original Traveler.c caps at 20 — the reactor doesn't melt
+                // down catastrophically; it just sits at 20 (still occupying
+                // cargo bays) until delivered or the pod is used.
+                if (G.ReactorStatus > 20) G.ReactorStatus = 20;
             }
 
             if (G.InvasionStatus > 0 && G.InvasionStatus < 8)

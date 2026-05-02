@@ -82,7 +82,11 @@ namespace SpaceTrader.UI.Screens
                 case JarekGetsOut:          return G.JarekStatus == 2;
                 case TransportWild:         return G.WildStatus == 0;
                 case GetReactor:            return G.ReactorStatus == 0;
-                case ReactorDelivered:      return G.ReactorStatus == -1;
+                case ReactorDelivered:      return G.ReactorStatus >= 21 && G.ReactorStatus != -1;
+                case GetSpecialLaser:       return G.ReactorStatus == 21;
+                case GetFuelCompactor:      return true;
+                case InstallLightningShield:return true;
+                case EraseRecord:           return true;
                 default:                    return true;
             }
         }
@@ -266,16 +270,63 @@ namespace SpaceTrader.UI.Screens
                 case GetHullUpgraded:
                     G.Ship.Hull = GameMath.Min(G.Ship.Hull + UpgradedHull, ShipyardSystem.GetHullStrength() + UpgradedHull);
                     G.HullUpgraded = true;
+                    G.ScarabStatus = 3;   // matches original — gates EscapeWithPod cleanup and Scarab hull cap
                     break;
 
                 case JarekGetsOut:
-                    G.JarekStatus = 3; // quest complete
-                    G.PoliceRecordScore += 1;
+                    G.JarekStatus = 2;    // not 3; SkillSystem checks JarekStatus >= 2 for trader-skill cap
                     break;
 
                 case ReactorDelivered:
-                    G.Credits += 1000L * (G.Difficulty + 1);
-                    G.ReactorStatus = 0; // fully resolved
+                    // Mark delivery and queue the Morgan Laser pickup at this system.
+                    G.ReactorStatus = 21;
+                    G.CurrentSystem.Special = GetSpecialLaser;
+                    break;
+
+                case GetSpecialLaser:
+                    {
+                        // Install Morgan's Laser into the first empty weapon slot.
+                        for (int i = 0; i < MaxWeapon; i++)
+                        {
+                            if (G.Ship.Weapon[i] < 0)
+                            {
+                                G.Ship.Weapon[i] = MorganLaserWeapon;
+                                break;
+                            }
+                        }
+                        G.ReactorStatus = -1;   // fully complete
+                    }
+                    break;
+
+                case GetFuelCompactor:
+                    {
+                        for (int i = 0; i < MaxGadget; i++)
+                        {
+                            if (G.Ship.Gadget[i] < 0)
+                            {
+                                G.Ship.Gadget[i] = FuelCompactor;
+                                break;
+                            }
+                        }
+                    }
+                    break;
+
+                case InstallLightningShield:
+                    {
+                        for (int i = 0; i < MaxShield; i++)
+                        {
+                            if (G.Ship.Shield[i] < 0)
+                            {
+                                G.Ship.Shield[i] = LightningShield;
+                                G.Ship.ShieldStrength[i] = GameData.Shieldtypes[LightningShield].Power;
+                                break;
+                            }
+                        }
+                    }
+                    break;
+
+                case EraseRecord:
+                    G.PoliceRecordScore = CleanScore;
                     break;
 
                 case MedicineDelivery:

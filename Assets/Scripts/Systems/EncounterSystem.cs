@@ -368,6 +368,9 @@ namespace SpaceTrader
                 GenerateOpponent(Police);
                 if (G.PoliceRecordScore < DubiousScore || G.WildStatus == 1)
                     return G.EncounterType = PoliceAttack;
+                // Mark immediately so a fled/attacked inspection isn't re-rolled
+                // on the next click of the same trip.
+                G.Inspected = true;
                 return G.EncounterType = PoliceInspection;
             }
 
