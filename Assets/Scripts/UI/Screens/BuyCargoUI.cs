@@ -15,6 +15,12 @@ namespace SpaceTrader.UI.Screens
         Transform _listContent;
         readonly List<RowWidgets> _rows = new();
 
+        // Snapshot of cargo / running-average BuyingPrice when the screen
+        // opened, so we can correctly recompute BuyingPrice when the player
+        // undoes part of a pending purchase via the - button or CLEAR.
+        readonly int[]  _origCargo        = new int[MaxTradeItem];
+        readonly long[] _origBuyingPrice  = new long[MaxTradeItem];
+
         struct RowWidgets
         {
             public TextMeshProUGUI Name, Price, Avail, Held;
@@ -138,7 +144,16 @@ namespace SpaceTrader.UI.Screens
             }
         }
 
-        public void OnShow() => Refresh();
+        public void OnShow()
+        {
+            var G = GameState.Instance;
+            for (int i = 0; i < MaxTradeItem; i++)
+            {
+                _origCargo[i]       = G.Ship.Cargo[i];
+                _origBuyingPrice[i] = G.BuyingPrice[i];
+            }
+            Refresh();
+        }
 
         void Refresh()
         {
@@ -192,6 +207,7 @@ namespace SpaceTrader.UI.Screens
                 G.Credits            += G.BuyPrice[idx] * amount;
                 G.Ship.Cargo[idx]    -= amount;
                 G.CurrentSystem.Qty[idx] += amount;
+                RecomputeBuyingPrice(idx);
             }
 
             _creditsText.text = UIFactory.Cr(G.Credits);
@@ -222,9 +238,36 @@ namespace SpaceTrader.UI.Screens
                     G.Ship.Cargo[i]        -= qty;
                     G.CurrentSystem.Qty[i] += qty;
                     _rows[i].PendingQty[0]  = 0;
+                    RecomputeBuyingPrice(i);
                 }
             }
             Refresh();
+        }
+
+        // After undoing some or all of a pending purchase, recompute the
+        // running-average BuyingPrice from the snapshot so a partially or
+        // fully reversed buy doesn't permanently skew profit calculations.
+        void RecomputeBuyingPrice(int idx)
+        {
+            var G = GameState.Instance;
+            int remaining = G.Ship.Cargo[idx];
+            int boughtThisSession = remaining - _origCargo[idx];
+
+            if (remaining <= 0)
+            {
+                G.BuyingPrice[idx] = 0;
+            }
+            else if (boughtThisSession <= 0)
+            {
+                // Back at or below the snapshot — only the original units remain.
+                G.BuyingPrice[idx] = _origBuyingPrice[idx];
+            }
+            else
+            {
+                G.BuyingPrice[idx] =
+                    (_origBuyingPrice[idx] * _origCargo[idx] +
+                     G.BuyPrice[idx] * boughtThisSession) / remaining;
+            }
         }
     }
 }

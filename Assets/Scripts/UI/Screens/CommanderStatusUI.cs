@@ -80,7 +80,7 @@ namespace SpaceTrader.UI.Screens
             sb.AppendLine($"  Engineer: {cmdr.Engineer} / {engineer}");
             sb.AppendLine();
             sb.AppendLine($"Ship: {st.Name}");
-            sb.AppendLine($"  Hull:    {ship.Hull}/{st.HullStrength}");
+            sb.AppendLine($"  Hull:    {ship.Hull}/{ShipyardSystem.GetHullStrength()}");
             sb.AppendLine($"  Fuel:    {ship.Fuel}/{FuelSystem.GetFuelTanks()}");
             sb.AppendLine($"  Cargo:   {CargoSystem.FilledCargoBays()}/{CargoSystem.TotalCargoBays()}");
 

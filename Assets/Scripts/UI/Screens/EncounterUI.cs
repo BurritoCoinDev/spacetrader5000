@@ -21,6 +21,9 @@ namespace SpaceTrader.UI.Screens
         // Combat state
         bool _playerFleeing;
         bool _oppFleeing;
+        bool _hasStruckFirst;   // tracks whether the player has already taken
+                                // an offensive action this encounter (so the
+                                // peaceful-attack record penalty applies once).
 
         public void Initialize(GameObject panel)
         {
@@ -85,8 +88,9 @@ namespace SpaceTrader.UI.Screens
 
         public void OnShow()
         {
-            _playerFleeing = false;
-            _oppFleeing    = false;
+            _playerFleeing  = false;
+            _oppFleeing     = false;
+            _hasStruckFirst = false;
             BuildActions();
             RefreshStatus();
         }
@@ -187,6 +191,19 @@ namespace SpaceTrader.UI.Screens
             var G   = GameState.Instance;
             var opp = G.Opponent;
 
+            // First strike against a peaceful encounter incurs a record penalty:
+            // attacking police that haven't fired (inspection/ignore) or a trader
+            // that wasn't already attacking is treated as the aggressor.
+            if (!_hasStruckFirst)
+            {
+                int enc = G.EncounterType;
+                bool peacefulPolice = enc == PoliceInspection || enc == PoliceIgnore || enc == PoliceFlee;
+                bool peacefulTrader = EncounterSystem.IsTrader(enc) && enc != TraderAttack;
+                if (peacefulPolice) G.PoliceRecordScore += AttackPoliceScore;
+                else if (peacefulTrader) G.PoliceRecordScore += AttackTraderScore;
+                _hasStruckFirst = true;
+            }
+
             // Player attacks opponent
             bool oppDestroyed = EncounterSystem.ExecuteAttack(G.Ship, opp, _oppFleeing, false);
             if (oppDestroyed)
@@ -218,7 +235,9 @@ namespace SpaceTrader.UI.Screens
             if (EncounterSystem.IsPolice(G.EncounterType))
                 G.PoliceRecordScore += FleeFromInspection;
 
-            if (GameMath.GetRandom(pil + oppPil) >= oppPil)
+            // Guard against pil + oppPil == 0 → GetRandom(0) divides by zero.
+            int pilSum = pil + oppPil;
+            if (pilSum <= 0 || GameMath.GetRandom(pilSum) >= oppPil)
             {
                 // Escaped
                 ShowResult("You escaped!", () => ReturnToTravel());

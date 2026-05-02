@@ -70,9 +70,12 @@ namespace SpaceTrader.UI.Screens
                 ColorTheme.FontTiny, ColorTheme.TextAccent);
             UIFactory.Stretch(divLbl.rectTransform, 8, 8, 2, 2);
 
-            int count = category == 0 ? MaxWeaponType + ExtraWeapons
-                      : category == 1 ? MaxShieldType + ExtraShields
-                      :                  MaxGadgetType + ExtraGadgets;
+            // Only the regular equipment is for sale; quest-reward items
+            // (Morgan's Laser, Lightning Shield, Fuel Compactor) live above
+            // Max*Type and must not appear in the shipyard catalogue.
+            int count = category == 0 ? MaxWeaponType
+                      : category == 1 ? MaxShieldType
+                      :                  MaxGadgetType;
 
             for (int i = 0; i < count; i++)
             {
