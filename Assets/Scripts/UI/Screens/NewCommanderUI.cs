@@ -66,8 +66,8 @@ namespace SpaceTrader.UI.Screens
                 new Vector2(0.05f, 0.61f), new Vector2(0.95f, 0.67f), Vector2.zero, Vector2.zero);
 
             _remainLabel = UIFactory.Label(panel.transform, "RemainLbl",
-                $"Remaining: {TotalPoints}",
-                ColorTheme.FontBody, ColorTheme.TextWarning, TextAlignmentOptions.Center);
+                "Remaining: 0",
+                ColorTheme.FontBody, ColorTheme.TextPositive, TextAlignmentOptions.Center);
             UIFactory.SetAnchored(_remainLabel.rectTransform,
                 new Vector2(0.05f, 0.55f), new Vector2(0.95f, 0.61f), Vector2.zero, Vector2.zero);
 
@@ -89,7 +89,7 @@ namespace SpaceTrader.UI.Screens
                     () => ChangeSkill(idx, -1));
                 UIFactory.Pin(decBtn.GetComponent<RectTransform>(), TextAnchor.MiddleRight, 70, 60, -160, 0);
 
-                _skillLabels[i] = UIFactory.Label(row.transform, "Val", "1",
+                _skillLabels[i] = UIFactory.Label(row.transform, "Val", "5",
                     ColorTheme.FontHeader, ColorTheme.TextAccent, TextAlignmentOptions.Center);
                 UIFactory.Pin(_skillLabels[i].rectTransform, TextAnchor.MiddleRight, 70, 60, -90, 0);
 
@@ -108,7 +108,9 @@ namespace SpaceTrader.UI.Screens
 
         public void OnShow()
         {
-            _skills = new[] { 1, 1, 1, 1 };
+            // Pre-allocate the 16 starting points evenly (5/5/5/5).
+            // Players can redistribute via the +/- buttons before starting.
+            _skills = new[] { 5, 5, 5, 5 };
             RefreshSkills();
         }
 
