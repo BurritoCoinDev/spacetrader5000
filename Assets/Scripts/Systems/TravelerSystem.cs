@@ -307,6 +307,17 @@ namespace SpaceTrader
             G.Raided     = false;
             G.Inspected  = false;
             G.AlreadyPaidForNewspaper = false;
+            // Auto-pay for newspaper if the player has the option enabled and
+            // can afford it; otherwise leave it as a manual purchase.
+            if (G.NewsAutoPay)
+            {
+                long newsPrice = NewsSystem.NewspaperPrice();
+                if (G.Credits >= newsPrice)
+                {
+                    G.Credits -= newsPrice;
+                    G.AlreadyPaidForNewspaper = true;
+                }
+            }
         }
 
         public enum WarpResult

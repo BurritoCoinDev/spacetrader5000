@@ -71,22 +71,10 @@ namespace SpaceTrader.UI.Screens
                 G => G.AlwaysIgnoreTradeInOrbit, (G, v) => G.AlwaysIgnoreTradeInOrbit = v);
             BuildToggle(content, "Reserve money for auto-buy",
                 G => G.ReserveMoney,     (G, v) => G.ReserveMoney = v);
-            BuildToggle(content, "Always show system info on arrival",
-                G => G.AlwaysInfo,       (G, v) => G.AlwaysInfo = v);
-            BuildToggle(content, "Continuous flight (skip confirmation)",
-                G => G.Continuous,       (G, v) => G.Continuous = v);
-            BuildToggle(content, "Attack fleeing opponents",
-                G => G.AttackFleeing,    (G, v) => G.AttackFleeing = v);
             BuildToggle(content, "Auto-pay for news",
                 G => G.NewsAutoPay,      (G, v) => G.NewsAutoPay = v);
-            BuildToggle(content, "Show tracked range on chart",
-                G => G.ShowTrackedRange, (G, v) => G.ShowTrackedRange = v);
             BuildToggle(content, "Auto-clear tracking after warp",
                 G => G.TrackAutoOff,     (G, v) => G.TrackAutoOff = v);
-            BuildToggle(content, "Textual encounter descriptions",
-                G => G.TextualEncounters, (G, v) => G.TextualEncounters = v);
-            BuildToggle(content, "Remind about loans",
-                G => G.RemindLoans,      (G, v) => G.RemindLoans = v);
             BuildNumeric(content, "Cargo bays to leave empty",
                 G => G.LeaveEmpty, (G, v) => G.LeaveEmpty = v, 0, 50);
         }
