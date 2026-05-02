@@ -252,13 +252,35 @@ namespace SpaceTrader
             if (G.AutoRepair)
                 ShipyardSystem.BuyRepairs((int)(ShipyardSystem.GetHullStrength() - G.Ship.Hull));
 
-            if (G.Ship.Tribbles > 0 && G.ReactorStatus == 0)
+            // Tribble logic — mirrors original Traveler.c arrival handling
+            if (G.Ship.Tribbles > 0)
             {
-                G.Ship.Tribbles += 1 + GetRandom((int)(G.Ship.Tribbles > 100 ? G.Ship.Tribbles / 100 : 1));
-                if (G.Ship.Tribbles > MaxTribbles) G.Ship.Tribbles = MaxTribbles;
+                if (G.ReactorStatus > 0 && G.ReactorStatus < 21)
+                {
+                    // Reactor radiation kills half the tribbles per warp
+                    G.Ship.Tribbles /= 2;
+                }
+                else if (G.ReactorStatus == 0)
+                {
+                    // Tribbles eat available food and breed proportionally
+                    int foodAte = Min(G.Ship.Tribbles / 250, G.Ship.Cargo[Food]);
+                    G.Ship.Cargo[Food] -= foodAte;
+                    G.Ship.Tribbles += G.Ship.Tribbles / 50 + 2 * foodAte
+                        + GetRandom(G.Ship.Tribbles / 100 + 1);
+
+                    // Narcotics cause explosive breeding (one unit consumed)
+                    if (G.Ship.Cargo[Narcotics] > 0)
+                    {
+                        G.Ship.Cargo[Narcotics]--;
+                        G.Ship.Tribbles *= 2;
+                    }
+
+                    if (G.Ship.Tribbles > MaxTribbles) G.Ship.Tribbles = MaxTribbles;
+                }
             }
 
-            if (G.ReactorStatus > 0)
+            // Reactor consumes narcotics then food as fuel (3 units per warp)
+            if (G.ReactorStatus > 0 && G.ReactorStatus < 21)
             {
                 for (int i = 0; i < 3; i++)
                     if (G.Ship.Cargo[Narcotics] > 0) G.Ship.Cargo[Narcotics]--;

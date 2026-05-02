@@ -201,15 +201,30 @@ namespace SpaceTrader
 
         public static bool ExecuteAttack(Ship attacker, Ship defender, bool defenderFlees, bool commanderUnderAttack)
         {
-            long damage = TotalWeapons(attacker, 0, MaxWeaponType + ExtraWeapons - 1);
+            // Beginner: commander takes zero damage while fleeing (free escape guarantee)
+            if (G.Difficulty == Beginner && commanderUnderAttack && defenderFlees)
+                return false;
+
+            // Scarab hull is only vulnerable to Pulse (0) and Morgan (3) lasers
+            long damage;
+            if (defender.Type == ScarabType)
+                damage = TotalWeapons(attacker, PulseLaserWeapon, PulseLaserWeapon)
+                       + TotalWeapons(attacker, MorganLaserWeapon, MorganLaserWeapon);
+            else
+                damage = TotalWeapons(attacker, 0, MaxWeaponType + ExtraWeapons - 1);
+
             if (damage <= 0) return false;
 
             int fSkill = SkillSystem.FighterSkill(attacker);
             damage     = damage * (fSkill + GetRandom(MaxSkill)) / (2 * MaxSkill);
 
-            if (defenderFlees)          damage = damage * 2 / 3;
+            if (defenderFlees) damage = damage * 2 / 3;
             damage += GetRandom((int)(damage / 2 + 1)) - GetRandom((int)(damage / 2 + 1));
             damage = Max(0L, damage);
+
+            // Active reactor amplifies incoming damage to the commander
+            if (commanderUnderAttack && G.ReactorStatus > 0 && G.ReactorStatus < 21)
+                damage += damage * (G.Difficulty + 1) / 4;
 
             long shieldsLeft = TotalShieldStrength(defender);
             if (shieldsLeft > 0)
@@ -227,6 +242,12 @@ namespace SpaceTrader
 
             if (damage > 0)
             {
+                // Cap per-hit hull damage to prevent one-shot kills
+                long maxHullHit = commanderUnderAttack
+                    ? Max(1L, defender.Hull / Max(1, Impossible - G.Difficulty))
+                    : Max(1L, defender.Hull / 2);
+                damage = Min(damage, maxHullHit);
+
                 defender.Hull -= damage;
                 if (commanderUnderAttack && SkillSystem.HasGadget(defender, AutoRepairSystem))
                     defender.Hull += Max(0L, GetRandom(SkillSystem.EngineerSkill(defender)));
@@ -312,15 +333,12 @@ namespace SpaceTrader
             int sys = G.WarpSystem;
             var pol = GameData.PoliticsTypes[G.SolarSystem[sys].Politics];
 
-            // Day-10 guard mirrors original Traveler.c — very rare encounters
-            // shouldn't surprise the player on the first few warps.
+            // Day-10 guard: very rare encounters shouldn't fire on the first few warps.
             if (G.Days > 10 && GetRandom(1000) < G.ChanceOfVeryRareEncounter)
             {
                 int vr = GetRandom(MaxVeryRareEncounter);
                 if (vr == MarieCeleste  && (G.VeryRareEncounter & AlreadyMarie) == 0)
                     return G.EncounterType = MarieCelesteEncounter;
-                // Famous captains snub criminals (record > CriminalScore=-10),
-                // not just clean records — port was too strict.
                 if (vr == CaptainAhab   && (G.VeryRareEncounter & AlreadyAhab) == 0 && G.PoliceRecordScore > CriminalScore)
                     return G.EncounterType = CaptainAhabEncounter;
                 if (vr == CaptainConrad && (G.VeryRareEncounter & AlreadyConrad) == 0 && G.PoliceRecordScore > CriminalScore)
@@ -333,26 +351,17 @@ namespace SpaceTrader
                     return G.EncounterType = BottleGoodEncounter;
             }
 
-            // Special encounters fire only at the final click(s) of the trip,
-            // not on every click — original Traveler.c gates these on Clicks==1
-            // (Monster/Dragonfly) or Clicks==20 (Scarab approach).
+            // Special quest ships fire at fixed click thresholds, not every click.
             if (G.Clicks == 1 && G.MonsterStatus == 1 && sys == AcamarSystem && GetRandom(100) < 85)
             {
                 G.Opponent = G.SpaceMonster.Clone();
                 return G.EncounterType = SpaceMonsterAttack;
             }
-
-            // Dragonfly trail — original only triggers combat at Zalkon at
-            // the last click of the approach. Earlier waypoints (Baratas /
-            // Melina / Regulas) are travel checkpoints, not combat.
             if (G.Clicks == 1 && G.DragonflyStatus == 4 && sys == ZalkonSystem && GetRandom(100) < 85)
             {
                 G.Opponent = G.Dragonfly_Ship.Clone();
                 return G.EncounterType = DragonflyAttack;
             }
-
-            // Scarab approach — gated on the destination system's
-            // ScarabDestroyed special, plus Clicks==20 and arrival via wormhole.
             if (G.Clicks == 20 && G.ScarabStatus == 1
                 && G.SolarSystem[sys].Special == ScarabDestroyed
                 && G.ArrivedViaWormhole && GetRandom(100) < 85)
@@ -361,33 +370,44 @@ namespace SpaceTrader
                 return G.EncounterType = ScarabAttack;
             }
 
-            // Police — skip if already inspected and cleared this voyage
-            if (pol.StrengthPolice > 0 && !G.Inspected && GetRandom(MaxPolice) < PoliceStrength(sys))
+            // Single mutually-exclusive encounter roll — mirrors original Traveler.c.
+            // Range shrinks with difficulty so encounters become more frequent.
+            int roll = GetRandom(44 - 2 * G.Difficulty);
+
+            // Police — strength is multiplied by crime record via PoliceStrength()
+            int polStr = (!G.Inspected && pol.StrengthPolice > 0) ? PoliceStrength(sys) : 0;
+            if (polStr > 0 && (roll -= polStr) < 0)
             {
                 GenerateOpponent(Police);
+                if (TravelerSystem.Cloaked(G.Ship, G.Opponent)) return -1;
                 if (G.PoliceRecordScore < DubiousScore || G.WildStatus == 1)
                     return G.EncounterType = PoliceAttack;
                 G.Inspected = true;
                 return G.EncounterType = PoliceInspection;
             }
 
-            // Pirate roll — original skips pirates after a successful raid
-            // this trip and halves rate for the Flea.
-            int pirateRoll = G.Ship.Type == 0 ? MaxPirate * 2 : MaxPirate;
-            if (pol.StrengthPirates > 0 && !G.Raided && GetRandom(pirateRoll) < pol.StrengthPirates)
+            // Pirate — Flea is less attractive prey (halved effective strength)
+            int pirStr = (!G.Raided && pol.StrengthPirates > 0)
+                ? (G.Ship.Type == 0 ? pol.StrengthPirates / 2 + 1 : pol.StrengthPirates)
+                : 0;
+            if (pirStr > 0 && (roll -= pirStr) < 0)
             {
                 GenerateOpponent(Pirate);
+                if (TravelerSystem.Cloaked(G.Ship, G.Opponent)) return -1;
                 return G.EncounterType = PirateAttack;
             }
 
-            if (pol.StrengthTraders > 0 && GetRandom(MaxTrader) < pol.StrengthTraders)
+            // Trader — occasional trade-in-orbit offer
+            if (pol.StrengthTraders > 0 && (roll -= pol.StrengthTraders) < 0)
             {
                 GenerateOpponent(Trader);
+                if (TravelerSystem.Cloaked(G.Ship, G.Opponent)) return -1;
+                if (!G.AlwaysIgnoreTradeInOrbit && GetRandom(1000) < G.ChanceOfTradeInOrbit)
+                    return G.EncounterType = TraderSell;
                 return G.EncounterType = TraderIgnore;
             }
 
-            // Mantis only fires when no regular encounter occurred. Matches
-            // original Traveler.c rate of GetRandom(20) <= 3 (~20%), not 30%.
+            // Mantis fires as fallback when no regular encounter occurred.
             if (G.ArtifactOnBoard && GetRandom(20) <= 3)
             {
                 GenerateOpponent(Mantis);

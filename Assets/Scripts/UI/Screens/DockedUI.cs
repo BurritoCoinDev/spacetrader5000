@@ -120,6 +120,7 @@ namespace SpaceTrader.UI.Screens
                 ("WARP",         GameScreen.Warp),
                 ("HIGH SCORES",  GameScreen.HighScores),
                 ("OPTIONS",      GameScreen.Options),
+                ("NEWS",         GameScreen.Newspaper),
             };
 
             foreach (var (label, screen) in buttons)

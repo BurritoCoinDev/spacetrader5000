@@ -17,6 +17,7 @@ namespace SpaceTrader.UI
         GalacticChart, ShortRangeChart, TargetSystem, AveragePriceList,
         Warp, Travel,
         Encounter, SpecialEvent, HighScores,
+        Newspaper,
     }
 
     public class UIManager : MonoBehaviour
@@ -134,6 +135,7 @@ namespace SpaceTrader.UI
             AddScreen<Screens.EncounterUI>       (GameScreen.Encounter);
             AddScreen<Screens.SpecialEventUI>    (GameScreen.SpecialEvent);
             AddScreen<Screens.HighScoresUI>      (GameScreen.HighScores);
+            AddScreen<Screens.NewspaperUI>       (GameScreen.Newspaper);
 
             foreach (var p in _panels.Values) p.SetActive(false);
         }

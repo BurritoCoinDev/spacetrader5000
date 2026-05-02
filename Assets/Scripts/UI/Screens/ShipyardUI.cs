@@ -14,6 +14,7 @@ namespace SpaceTrader.UI.Screens
         TextMeshProUGUI _creditsText, _shipText;
         TextMeshProUGUI _fuelCostText, _repairCostText;
         Button _buyFuelBtn, _buyRepairBtn;
+        TextMeshProUGUI _transferMsg;
 
         public void Initialize(GameObject panel)
         {
@@ -32,6 +33,12 @@ namespace SpaceTrader.UI.Screens
             _shipText = UIFactory.Label(strip.transform, "Ship", "",
                 ColorTheme.FontBody, ColorTheme.TextSecondary, TextAlignmentOptions.Right);
             UIFactory.Stretch(_shipText.rectTransform, 12, 12, 4, 4);
+
+            // Transfer-confirmation message (shown after buying a ship with special equipment)
+            _transferMsg = UIFactory.LabelWrap(panel.transform, "TransferMsg", "",
+                ColorTheme.FontSmall, ColorTheme.TextAccent, TextAlignmentOptions.Center);
+            UIFactory.SetAnchored(_transferMsg.rectTransform,
+                new Vector2(0.02f, 0.535f), new Vector2(0.98f, 0.575f), Vector2.zero, Vector2.zero);
 
             BuildSection(panel.transform, "FUEL",
                 new Vector2(0, 0.72f), new Vector2(1, 0.87f),
@@ -134,6 +141,7 @@ namespace SpaceTrader.UI.Screens
             var st = GameData.Shiptypes[G.Ship.Type];
             _creditsText.text = UIFactory.Cr(G.Credits);
             _shipText.text    = $"Ship: {st.Name}";
+            _transferMsg.text = "";
 
             int maxFuel = FuelSystem.GetFuelTanks();
             int missing  = maxFuel - G.Ship.Fuel;
@@ -173,9 +181,67 @@ namespace SpaceTrader.UI.Screens
 
             if (G.CurrentSystem.TechLevel < st.MinTechLevel) return;
             if (G.Credits < net) return;
+
+            // Record quest/special items before CreateShip wipes the ship
+            bool hadMorganLaser     = SkillSystem.HasWeapon(G.Ship, MorganLaserWeapon, true);
+            bool hadLightningShield = SkillSystem.HasShield(G.Ship, LightningShield);
+            bool hadFuelCompactor   = SkillSystem.HasGadget(G.Ship, FuelCompactor);
+
             G.Credits -= net;
             ShipyardSystem.CreateShip(shipIdx);
+
+            // Transfer quest equipment to the new ship if slots are available.
+            // These items are unique rewards that shouldn't simply disappear.
+            var newSt = GameData.Shiptypes[G.Ship.Type];
+            var transferred = new System.Collections.Generic.List<string>();
+
+            if (hadMorganLaser)
+            {
+                for (int i = 0; i < newSt.WeaponSlots; i++)
+                {
+                    if (G.Ship.Weapon[i] < 0)
+                    {
+                        G.Ship.Weapon[i] = MorganLaserWeapon;
+                        transferred.Add("Morgan Laser");
+                        break;
+                    }
+                }
+            }
+            if (hadLightningShield)
+            {
+                for (int i = 0; i < newSt.ShieldSlots; i++)
+                {
+                    if (G.Ship.Shield[i] < 0)
+                    {
+                        G.Ship.Shield[i]         = LightningShield;
+                        G.Ship.ShieldStrength[i] = LShieldPower;
+                        transferred.Add("Lightning Shield");
+                        break;
+                    }
+                }
+            }
+            if (hadFuelCompactor)
+            {
+                for (int i = 0; i < newSt.GadgetSlots; i++)
+                {
+                    if (G.Ship.Gadget[i] < 0)
+                    {
+                        G.Ship.Gadget[i] = FuelCompactor;
+                        transferred.Add("Fuel Compactor");
+                        break;
+                    }
+                }
+            }
+
             Refresh();
+
+            if (transferred.Count > 0)
+            {
+                string items = string.Join(", ", transferred);
+                ShowTransferMessage($"Transferred to new ship: {items}.");
+            }
         }
+
+        void ShowTransferMessage(string text) => _transferMsg.text = text;
     }
 }

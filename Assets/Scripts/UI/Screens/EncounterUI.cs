@@ -582,6 +582,7 @@ namespace SpaceTrader.UI.Screens
             if (enc == PoliceAttack)              return prefix + $"a police {oppName} attacks you!";
             if (EncounterSystem.IsPirate(enc))    return prefix + $"you encounter a pirate {oppName}.\nYour opponent attacks.";
             if (enc == TraderAttack)              return prefix + $"a trader {oppName} attacks!";
+            if (enc == TraderSell)                return prefix + $"a trader {oppName} hails you and offers goods for sale.";
             if (EncounterSystem.IsTrader(enc))    return prefix + $"a trader {oppName} passes by.";
             if (EncounterSystem.IsSpaceMonster(enc)) return prefix + "a massive Space Monster blocks your path!";
             if (EncounterSystem.IsDragonfly(enc)) return prefix + "the Dragonfly cuts you off!";
