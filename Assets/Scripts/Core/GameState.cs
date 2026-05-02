@@ -69,7 +69,6 @@ namespace SpaceTrader
         public int[] Wormhole               = new int[MaxWormhole];
         public int   Difficulty             = Normal;
 
-        public long[] BuyingPriceAlt       = new long[MaxTradeItem];
         public bool  ArtifactOnBoard        = false;
         public bool  ReserveMoney           = false;
         public bool  PriceDifferences       = false;
@@ -188,7 +187,6 @@ namespace SpaceTrader
             CanSuperWarp        = false;
             CheatCounter        = 0;
             NewsSpecialEventCount = 0;
-            for (int i = 0; i < MaxTradeItem; i++) BuyingPriceAlt[i] = 0;
 
             for (int i = 0; i < MaxTradeItem; i++)
             {
